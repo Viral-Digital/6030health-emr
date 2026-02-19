@@ -634,10 +634,214 @@
   ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
   ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-  /* ── RESPONSIVE FIX ── */
+  /* ══════════════════════════════════════
+     RESPONSIVE — TABLET & MOBILE
+  ══════════════════════════════════════ */
+
+  /* Tablet */
   @media (max-width: 1200px) {
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
     .vitals-grid { grid-template-columns: repeat(2, 1fr); }
+    .grid-2-1 { grid-template-columns: 1fr; }
+  }
+
+  /* Sidebar overlay */
+  .sidebar-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 99;
+  }
+  .sidebar-overlay.open { display: block; }
+
+  /* Hamburger */
+  .hamburger {
+    display: none;
+    width: 36px; height: 36px;
+    background: var(--bg-dark);
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    align-items: center; justify-content: center;
+    cursor: pointer; font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  /* Bottom mobile nav */
+  .mobile-nav {
+    display: none;
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    z-index: 98;
+    padding: 6px 0 max(6px, env(safe-area-inset-bottom));
+  }
+  .mobile-nav-inner { display: flex; justify-content: space-around; align-items: center; }
+  .mobile-nav-item {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    padding: 6px 8px; cursor: pointer; border-radius: 8px;
+    font-size: 10px; font-weight: 600; color: var(--text-muted);
+    transition: all 0.15s; min-width: 48px; text-align: center;
+  }
+  .mobile-nav-item .mn-icon { font-size: 20px; line-height: 1; }
+  .mobile-nav-item.active { color: var(--accent-teal); }
+
+  /* FAB - floating action button for mobile new patient */
+  .fab {
+    display: none;
+    position: fixed; bottom: 76px; right: 18px;
+    width: 52px; height: 52px; border-radius: 50%;
+    background: linear-gradient(135deg, #0ea5e9, #0284c7);
+    color: white; font-size: 24px; font-weight: 300;
+    border: none; cursor: pointer; z-index: 97;
+    box-shadow: 0 4px 20px rgba(14,165,233,0.4);
+    align-items: center; justify-content: center;
+    transition: transform 0.15s;
+  }
+  .fab:active { transform: scale(0.93); }
+
+  @media (max-width: 768px) {
+    body { overflow: auto; }
+
+    .hamburger { display: flex; }
+    .mobile-nav { display: block; }
+    .fab { display: flex; }
+
+    /* Sidebar off-canvas drawer */
+    .sidebar {
+      position: fixed;
+      left: -264px; top: 0; bottom: 0;
+      width: 260px; z-index: 100;
+      transition: left 0.25s ease;
+    }
+    .sidebar.open {
+      left: 0;
+      box-shadow: 4px 0 30px rgba(0,0,0,0.5);
+    }
+
+    .main-wrapper { margin-left: 0; height: auto; overflow: visible; }
+
+    /* Topbar */
+    .topbar { padding: 0 14px; gap: 10px; }
+    .topbar .search-bar { display: none; }
+    .topbar .btn-primary { display: none; }
+    .page-title { font-size: 14px; }
+
+    /* Content */
+    .content {
+      padding: 14px 12px;
+      padding-bottom: 84px;
+      overflow: visible;
+      min-height: calc(100vh - 60px);
+    }
+
+    /* Grids: all single column */
+    .stats-grid,
+    .grid-2,
+    .grid-3,
+    .grid-2-1,
+    .vitals-grid { grid-template-columns: 1fr !important; gap: 10px; }
+
+    .form-row,
+    .form-row-3 { grid-template-columns: 1fr !important; gap: 12px; }
+
+    /* Section headers */
+    .section-header { margin-bottom: 14px; }
+    .section-title { font-size: 18px; }
+    .section-desc { font-size: 12px; }
+
+    /* Flex headers with buttons — stack them */
+    #page-patients .section-header,
+    #page-queue .section-header,
+    #page-billing .section-header,
+    #page-reports .section-header,
+    #page-users .section-header,
+    #page-settings .section-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+
+    /* Cards */
+    .card { padding: 14px 12px; }
+    .card-header { flex-wrap: wrap; gap: 8px; }
+    .stat-value { font-size: 24px; }
+
+    /* Tables: scroll horizontally */
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table { min-width: 520px; font-size: 12px; }
+    td, th { padding: 9px 10px; }
+
+    /* Tabs */
+    .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; padding-bottom: 0; }
+    .tab { white-space: nowrap; padding: 10px 13px; font-size: 12.5px; }
+
+    /* Patient banner */
+    .patient-banner { flex-wrap: wrap; gap: 10px; }
+    .banner-name { font-size: 15px; }
+
+    /* Modals: bottom sheet on mobile */
+    .modal-overlay { align-items: flex-end; }
+    .modal {
+      max-width: 100% !important;
+      width: 100%; border-radius: 20px 20px 0 0;
+      max-height: 92vh; position: static;
+    }
+    .modal-lg, .modal-sm { max-width: 100% !important; }
+    .modal-body { padding: 16px 14px; }
+    .modal-footer { padding: 12px 14px; flex-wrap: wrap; gap: 8px; }
+    .modal-footer .btn { flex: 1; justify-content: center; }
+
+    /* Invoice lines */
+    .invoice-line { flex-wrap: wrap; gap: 6px; }
+    .inv-name { width: 100%; font-size: 13px; }
+    .inv-qty input { width: 50px; }
+
+    /* Queue */
+    .queue-item { flex-wrap: wrap; gap: 8px; }
+
+    /* Payment grid */
+    .pay-method-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .pay-method-card { padding: 10px 8px; }
+    .pay-method-card .pm-desc { display: none; }
+
+    /* Steps */
+    .steps { gap: 4px; }
+    .step { font-size: 10.5px; gap: 5px; }
+    .step-divider { min-width: 8px; margin: 0 4px; }
+    .step-num { width: 20px; height: 20px; font-size: 10px; }
+
+    /* Search bars in filter rows */
+    .card > div > .search-bar { max-width: 100% !important; flex: 1; min-width: 0; }
+    select { min-width: 0; }
+
+    /* Reports date row */
+    #page-reports .section-header > div { flex-wrap: wrap; gap: 8px; width: 100%; }
+    #page-reports .section-header input[type=date] { flex: 1; min-width: 120px; }
+
+    /* Auth */
+    .auth-panel-left { display: none; }
+    .auth-panel-right { padding: 28px 18px; align-items: flex-start; padding-top: 40px; }
+    .auth-form-wrap { max-width: 100%; }
+    .auth-form-title { font-size: 21px; }
+    .auth-form-sub { font-size: 13px; }
+    .role-selector { grid-template-columns: 1fr 1fr; gap: 8px; }
+
+    /* Consultation grid */
+    #page-consultation .grid-2 { grid-template-columns: 1fr !important; }
+    #page-settings .grid-2 { grid-template-columns: 1fr !important; }
+
+    /* Vitals grid */
+    .vitals-grid { grid-template-columns: repeat(2, 1fr) !important; }
+
+    /* Mini bar chart on dashboard */
+    .mini-bar-chart { height: 50px; }
+
+    /* Revenue rows */
+    .rev-bar-wrap { width: 50px; }
+  }
+
+  /* Very small phones */
+  @media (max-width: 380px) {
+    .content { padding: 12px 10px; padding-bottom: 84px; }
+    .stats-grid { grid-template-columns: 1fr !important; }
+    .vitals-grid { grid-template-columns: 1fr 1fr !important; }
+    .auth-form-title { font-size: 19px; }
   }
 
   /* ── COLOR UTILITIES ── */
@@ -1185,7 +1389,8 @@
 <div class="app-root" id="app-root">
 
 <!-- SIDEBAR -->
-<aside class="sidebar">
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+<aside class="sidebar" id="main-sidebar">
   <div class="sidebar-logo">
     <div class="logo-mark">6H</div>
     <div class="logo-text">
@@ -1243,6 +1448,7 @@
 <div class="main-wrapper">
   <!-- TOPBAR -->
   <header class="topbar">
+    <div class="hamburger" id="hamburger-btn" onclick="toggleSidebar()">☰</div>
     <span class="page-title" id="page-title">Dashboard</span>
     <div class="search-bar">
       <span class="search-icon">🔍</span>
@@ -2303,6 +2509,38 @@ Mother: No significant illness</textarea>
 <div class="toast-container" id="toast-container"></div>
 
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  // ── MOBILE SIDEBAR TOGGLE ──
+  function toggleSidebar() {
+    const sidebar = document.getElementById('main-sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('open');
+    document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
+  }
+
+  function closeSidebar() {
+    const sidebar = document.getElementById('main-sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+    sidebar.classList.remove('open');
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  // ── MOBILE BOTTOM NAV ──
+  function setMobileNav(activeId) {
+    document.querySelectorAll('.mobile-nav-item').forEach(el => el.classList.remove('active'));
+    const el = document.getElementById(activeId);
+    if (el) el.classList.add('active');
+  }
+
+  // Map pages to bottom nav items
+  const mobileNavMap = {
+    dashboard: 'mn-dashboard',
+    patients: 'mn-patients',
+    queue: 'mn-queue',
+    billing: 'mn-billing'
+  };
+
   // ── PAGE NAVIGATION ──
   const pageNames = {
     dashboard: 'Dashboard',
@@ -2324,6 +2562,15 @@ Mother: No significant illness</textarea>
       if (n.getAttribute('onclick') && n.getAttribute('onclick').includes("'" + id + "'")) n.classList.add('active');
     });
     document.getElementById('page-title').textContent = pageNames[id] || id;
+    // Sync mobile bottom nav
+    document.querySelectorAll('.mobile-nav-item').forEach(el => el.classList.remove('active'));
+    const mnId = mobileNavMap[id];
+    if (mnId) document.getElementById(mnId).classList.add('active');
+    // Close sidebar on mobile after navigation
+    closeSidebar();
+    // Scroll to top
+    const content = document.querySelector('.content');
+    if (content) content.scrollTop = 0;
   }
 
   // ── TABS ──
@@ -2865,6 +3112,35 @@ Mother: No significant illness</textarea>
   });
 
 </script>
+
+<!-- MOBILE BOTTOM NAV -->
+<nav class="mobile-nav">
+  <div class="mobile-nav-inner">
+    <div class="mobile-nav-item active" id="mn-dashboard" onclick="showPage('dashboard');setMobileNav('mn-dashboard')">
+      <div class="mn-icon">📊</div>
+      <span>Dashboard</span>
+    </div>
+    <div class="mobile-nav-item" id="mn-patients" onclick="showPage('patients');setMobileNav('mn-patients')">
+      <div class="mn-icon">👥</div>
+      <span>Patients</span>
+    </div>
+    <div class="mobile-nav-item" id="mn-queue" onclick="showPage('queue');setMobileNav('mn-queue')">
+      <div class="mn-icon">🔢</div>
+      <span>Queue</span>
+    </div>
+    <div class="mobile-nav-item" id="mn-billing" onclick="showPage('billing');setMobileNav('mn-billing')">
+      <div class="mn-icon">📋</div>
+      <span>Billing</span>
+    </div>
+    <div class="mobile-nav-item" id="mn-more" onclick="toggleSidebar()">
+      <div class="mn-icon">☰</div>
+      <span>More</span>
+    </div>
+  </div>
+</nav>
+
+<!-- FLOATING ACTION BUTTON -->
+<button class="fab" onclick="openModal('modal-register')" title="Register new patient">+</button>
 
 </div><!-- /.app-root -->
 </body>
