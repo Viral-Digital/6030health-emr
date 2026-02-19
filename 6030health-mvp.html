@@ -1,0 +1,2729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>6030 Health — EMR</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-dark: #0a0e1a;
+    --bg-card: #111827;
+    --bg-card-2: #1a2235;
+    --bg-hover: #1e2d45;
+    --accent-teal: #0ea5e9;
+    --accent-teal-dim: rgba(14,165,233,0.15);
+    --accent-green: #10b981;
+    --accent-green-dim: rgba(16,185,129,0.15);
+    --accent-amber: #f59e0b;
+    --accent-amber-dim: rgba(245,158,11,0.15);
+    --accent-red: #ef4444;
+    --accent-red-dim: rgba(239,68,68,0.15);
+    --accent-purple: #8b5cf6;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #475569;
+    --border: #1e293b;
+    --border-light: #2d3f5a;
+    --sidebar-width: 240px;
+    --topbar-height: 60px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: var(--sidebar-width);
+    height: 100vh;
+    background: var(--bg-card);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    left: 0; top: 0;
+    z-index: 100;
+    flex-shrink: 0;
+  }
+
+  .sidebar-logo {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+  }
+
+  .logo-mark {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, #0ea5e9, #10b981);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 14px; color: white;
+    letter-spacing: -0.5px;
+  }
+
+  .logo-text { display: flex; flex-direction: column; }
+  .logo-name { font-weight: 700; font-size: 15px; line-height: 1.2; color: var(--text-primary); }
+  .logo-sub { font-size: 10px; color: var(--text-secondary); letter-spacing: 0.5px; text-transform: uppercase; }
+
+  .sidebar-nav {
+    flex: 1; padding: 12px 0;
+    overflow-y: auto;
+  }
+
+  .nav-section-label {
+    font-size: 10px; font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 1px;
+    padding: 12px 20px 4px;
+  }
+
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 20px;
+    cursor: pointer;
+    font-size: 13.5px; font-weight: 500;
+    color: var(--text-secondary);
+    border-radius: 0;
+    transition: all 0.15s;
+    position: relative;
+    text-decoration: none;
+  }
+
+  .nav-item:hover { color: var(--text-primary); background: var(--bg-hover); }
+
+  .nav-item.active {
+    color: var(--accent-teal);
+    background: var(--accent-teal-dim);
+  }
+
+  .nav-item.active::before {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0;
+    width: 3px; background: var(--accent-teal);
+    border-radius: 0 2px 2px 0;
+  }
+
+  .nav-icon { width: 18px; text-align: center; font-size: 15px; flex-shrink: 0; }
+
+  .nav-badge {
+    margin-left: auto;
+    background: var(--accent-teal);
+    color: white; font-size: 10px; font-weight: 700;
+    padding: 1px 6px; border-radius: 20px; min-width: 18px; text-align: center;
+  }
+
+  .nav-badge.amber { background: var(--accent-amber); }
+  .nav-badge.green { background: var(--accent-green); }
+
+  .sidebar-footer {
+    padding: 12px 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  .user-card {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px; border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .user-card:hover { background: var(--bg-hover); }
+
+  .user-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, #8b5cf6, #0ea5e9);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: white; flex-shrink: 0;
+  }
+
+  .user-name { font-size: 12.5px; font-weight: 600; line-height: 1.2; }
+  .user-role { font-size: 11px; color: var(--text-muted); }
+
+  /* ── MAIN LAYOUT ── */
+  .main-wrapper {
+    margin-left: var(--sidebar-width);
+    flex: 1; display: flex; flex-direction: column;
+    height: 100vh; overflow: hidden;
+  }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    height: var(--topbar-height);
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center;
+    padding: 0 24px; gap: 16px;
+    position: sticky; top: 0; z-index: 50;
+    flex-shrink: 0;
+  }
+
+  .page-title { font-size: 16px; font-weight: 700; }
+
+  .search-bar {
+    flex: 1; max-width: 420px;
+    display: flex; align-items: center; gap: 8px;
+    background: var(--bg-dark);
+    border: 1px solid var(--border-light);
+    border-radius: 8px; padding: 0 12px;
+    height: 36px; cursor: text;
+    transition: border-color 0.15s;
+  }
+
+  .search-bar:focus-within { border-color: var(--accent-teal); }
+  .search-bar input {
+    flex: 1; background: none; border: none; outline: none;
+    font-family: inherit; font-size: 13px; color: var(--text-primary);
+  }
+  .search-bar input::placeholder { color: var(--text-muted); }
+  .search-icon { color: var(--text-muted); font-size: 14px; }
+
+  .topbar-actions { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 7px;
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    cursor: pointer; border: none; transition: all 0.15s;
+    text-decoration: none;
+  }
+
+  .btn-primary {
+    background: var(--accent-teal);
+    color: white;
+  }
+  .btn-primary:hover { background: #0284c7; }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-light);
+  }
+  .btn-ghost:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  .btn-danger { background: var(--accent-red-dim); color: var(--accent-red); border: 1px solid transparent; }
+  .btn-danger:hover { background: var(--accent-red); color: white; }
+  .btn-success { background: var(--accent-green-dim); color: var(--accent-green); border: 1px solid transparent; }
+  .btn-success:hover { background: var(--accent-green); color: white; }
+
+  .icon-btn {
+    width: 36px; height: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg-dark); border: 1px solid var(--border-light);
+    cursor: pointer; color: var(--text-secondary); font-size: 16px;
+    transition: all 0.15s; position: relative;
+  }
+  .icon-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+  .notif-dot {
+    position: absolute; top: 6px; right: 6px;
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--accent-red); border: 1.5px solid var(--bg-card);
+  }
+
+  /* ── CONTENT AREA ── */
+  .content {
+    flex: 1; overflow-y: auto; padding: 24px;
+    background: var(--bg-dark);
+  }
+
+  /* ── PAGES ── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ── STAT CARDS ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px; margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px;
+    position: relative; overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .stat-card:hover { border-color: var(--border-light); }
+
+  .stat-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  }
+  .stat-card.teal::before { background: linear-gradient(90deg, #0ea5e9, #38bdf8); }
+  .stat-card.green::before { background: linear-gradient(90deg, #10b981, #34d399); }
+  .stat-card.amber::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+  .stat-card.red::before { background: linear-gradient(90deg, #ef4444, #f87171); }
+  .stat-card.purple::before { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+
+  .stat-label { font-size: 11.5px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+
+  .stat-value { font-size: 28px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; margin-bottom: 6px; }
+
+  .stat-value.teal { color: var(--accent-teal); }
+  .stat-value.green { color: var(--accent-green); }
+  .stat-value.amber { color: var(--accent-amber); }
+  .stat-value.red { color: var(--accent-red); }
+  .stat-value.purple { color: var(--accent-purple); }
+
+  .stat-meta { font-size: 11.5px; color: var(--text-muted); }
+  .stat-up { color: var(--accent-green); }
+  .stat-down { color: var(--accent-red); }
+
+  /* ── GRID 2-COL ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .grid-2-1 { display: grid; grid-template-columns: 1.5fr 1fr; gap: 16px; margin-bottom: 24px; }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px;
+  }
+
+  .card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .card-title { font-size: 14px; font-weight: 700; }
+  .card-subtitle { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+
+  /* ── TABLE ── */
+  .table-wrap { overflow-x: auto; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th {
+    font-size: 11px; font-weight: 600; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.5px;
+    padding: 0 16px 10px; text-align: left; white-space: nowrap;
+  }
+  td {
+    padding: 12px 16px; font-size: 13px;
+    border-top: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  tr:hover td { background: var(--bg-hover); }
+
+  /* ── BADGE ── */
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; font-weight: 600; padding: 3px 8px;
+    border-radius: 20px;
+  }
+  .badge-green { background: var(--accent-green-dim); color: var(--accent-green); }
+  .badge-amber { background: var(--accent-amber-dim); color: var(--accent-amber); }
+  .badge-red { background: var(--accent-red-dim); color: var(--accent-red); }
+  .badge-teal { background: var(--accent-teal-dim); color: var(--accent-teal); }
+  .badge-purple { background: rgba(139,92,246,0.15); color: var(--accent-purple); }
+  .badge-muted { background: rgba(100,116,139,0.15); color: var(--text-secondary); }
+
+  /* ── PATIENT AVATAR ── */
+  .patient-cell { display: flex; align-items: center; gap: 10px; }
+  .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: white; flex-shrink: 0;
+  }
+  .av-teal { background: linear-gradient(135deg, #0ea5e9, #38bdf8); }
+  .av-green { background: linear-gradient(135deg, #10b981, #34d399); }
+  .av-purple { background: linear-gradient(135deg, #8b5cf6, #a78bfa); }
+  .av-amber { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
+  .av-red { background: linear-gradient(135deg, #ef4444, #f87171); }
+
+  .patient-name { font-size: 13px; font-weight: 600; }
+  .patient-mrn { font-size: 11px; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+
+  /* ── FORM ELEMENTS ── */
+  .form-group { margin-bottom: 16px; }
+  label { display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+
+  input[type=text], input[type=email], input[type=tel], input[type=date],
+  input[type=number], input[type=password], select, textarea {
+    width: 100%; background: var(--bg-dark);
+    border: 1px solid var(--border-light);
+    border-radius: 8px; padding: 9px 12px;
+    font-family: inherit; font-size: 13.5px; color: var(--text-primary);
+    outline: none; transition: border-color 0.15s;
+  }
+
+  input:focus, select:focus, textarea:focus { border-color: var(--accent-teal); }
+  select { cursor: pointer; }
+  textarea { resize: vertical; min-height: 80px; }
+
+  select option { background: var(--bg-card); }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+    z-index: 200; display: none;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: 16px; width: 100%; max-width: 620px;
+    max-height: 90vh; overflow-y: auto;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.5);
+    animation: modalIn 0.2s ease;
+  }
+  .modal-lg { max-width: 820px; }
+  .modal-sm { max-width: 440px; }
+
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.97) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .modal-title { font-size: 16px; font-weight: 700; }
+  .modal-close {
+    width: 30px; height: 30px; border-radius: 8px;
+    background: none; border: none; color: var(--text-muted);
+    cursor: pointer; font-size: 18px; display: flex;
+    align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+  .modal-close:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+  .modal-body { padding: 24px; }
+  .modal-footer {
+    padding: 16px 24px; border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: flex-end; gap: 10px;
+  }
+
+  /* ── STEP INDICATOR ── */
+  .steps {
+    display: flex; align-items: center; gap: 0;
+    margin-bottom: 24px;
+  }
+  .step {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12.5px; font-weight: 600;
+    color: var(--text-muted);
+  }
+  .step-num {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--bg-hover); display: flex; align-items: center;
+    justify-content: center; font-size: 11px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .step.active { color: var(--accent-teal); }
+  .step.active .step-num { background: var(--accent-teal); color: white; }
+  .step.done .step-num { background: var(--accent-green); color: white; }
+  .step-divider {
+    flex: 1; height: 1px; background: var(--border);
+    margin: 0 10px; min-width: 20px;
+  }
+
+  /* ── SECTION TITLE ── */
+  .section-header { margin-bottom: 20px; }
+  .section-title { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+  .section-desc { font-size: 13px; color: var(--text-muted); }
+
+  /* ── PATIENT BANNER ── */
+  .patient-banner {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent-teal);
+    border-radius: 12px; padding: 16px 20px;
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 20px;
+  }
+  .banner-avatar {
+    width: 52px; height: 52px; border-radius: 12px;
+    background: linear-gradient(135deg, #0ea5e9, #10b981);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 800; color: white; flex-shrink: 0;
+  }
+  .banner-name { font-size: 17px; font-weight: 800; }
+  .banner-meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+  .banner-mrn { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+  .allergy-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: var(--accent-red-dim); color: var(--accent-red);
+    font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 20px;
+    margin-left: 8px;
+  }
+
+  /* ── TABS ── */
+  .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 0; }
+  .tab {
+    padding: 10px 16px; font-size: 13px; font-weight: 600;
+    color: var(--text-muted); cursor: pointer;
+    border-bottom: 2px solid transparent; transition: all 0.15s;
+    position: relative; bottom: -1px;
+  }
+  .tab:hover { color: var(--text-primary); }
+  .tab.active { color: var(--accent-teal); border-bottom-color: var(--accent-teal); }
+
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+
+  /* ── VITALS GRID ── */
+  .vitals-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .vital-card {
+    background: var(--bg-dark); border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px; text-align: center;
+  }
+  .vital-label { font-size: 10.5px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .vital-value { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .vital-unit { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+  .vital-flag { margin-top: 4px; }
+
+  /* ── QUEUE ── */
+  .queue-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 16px; background: var(--bg-card);
+    border: 1px solid var(--border); border-radius: 10px; margin-bottom: 8px;
+    transition: border-color 0.15s;
+  }
+  .queue-item:hover { border-color: var(--border-light); }
+  .queue-pos {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--bg-dark); display: flex; align-items: center;
+    justify-content: center; font-size: 13px; font-weight: 800;
+    color: var(--text-secondary); flex-shrink: 0;
+  }
+  .queue-pos.calling { background: var(--accent-teal-dim); color: var(--accent-teal); }
+  .queue-info { flex: 1; }
+  .queue-name { font-size: 13.5px; font-weight: 600; }
+  .queue-meta { font-size: 11.5px; color: var(--text-muted); margin-top: 2px; }
+  .queue-time { font-size: 11.5px; color: var(--text-muted); text-align: right; }
+
+  /* ── INVOICE ── */
+  .invoice-line {
+    display: flex; align-items: center;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+    gap: 12px;
+  }
+  .invoice-line:last-child { border-bottom: none; }
+  .inv-name { flex: 1; font-size: 13px; font-weight: 500; }
+  .inv-qty { width: 50px; }
+  .inv-price { width: 100px; text-align: right; font-variant-numeric: tabular-nums; font-size: 13px; }
+  .inv-total { width: 110px; text-align: right; font-variant-numeric: tabular-nums; font-size: 13px; font-weight: 600; color: var(--accent-teal); }
+
+  .invoice-total-row {
+    display: flex; align-items: center; justify-content: flex-end;
+    gap: 30px; padding: 12px 0 0;
+  }
+  .inv-total-label { font-size: 13px; color: var(--text-secondary); }
+  .inv-total-val { font-size: 13px; font-variant-numeric: tabular-nums; width: 120px; text-align: right; }
+  .inv-grand-total .inv-total-label { font-size: 15px; font-weight: 700; }
+  .inv-grand-total .inv-total-val { font-size: 15px; font-weight: 800; color: var(--accent-green); }
+
+  /* ── MINI CHART ── */
+  .mini-bar-chart { display: flex; align-items: flex-end; gap: 4px; height: 40px; }
+  .bar {
+    flex: 1; border-radius: 3px 3px 0 0;
+    background: var(--accent-teal-dim); min-height: 4px;
+    transition: background 0.15s;
+  }
+  .bar:hover { background: var(--accent-teal); }
+  .bar.highlight { background: var(--accent-teal); }
+
+  /* ── REVENUE TABLE ── */
+  .rev-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+  }
+  .rev-row:last-child { border-bottom: none; }
+  .rev-method { flex: 1; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+  .rev-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .rev-amount { font-size: 13px; font-variant-numeric: tabular-nums; font-weight: 600; }
+  .rev-count { font-size: 11.5px; color: var(--text-muted); width: 60px; text-align: right; }
+  .rev-bar-wrap { width: 80px; }
+  .rev-bar-bg { background: var(--bg-dark); border-radius: 20px; height: 4px; overflow: hidden; }
+  .rev-bar-fill { height: 100%; border-radius: 20px; }
+
+  /* ── SEARCH RESULTS ── */
+  .search-result-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px; border-radius: 8px; cursor: pointer;
+    transition: background 0.15s; border: 1px solid transparent;
+  }
+  .search-result-item:hover { background: var(--bg-hover); border-color: var(--border); }
+
+  /* ── ALLERGY/HISTORY INPUT ── */
+  .tag-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--bg-dark); border: 1px solid var(--border-light);
+    border-radius: 6px; padding: 4px 8px; font-size: 12px;
+    font-weight: 500; color: var(--text-secondary);
+  }
+  .tag .remove { cursor: pointer; color: var(--text-muted); font-size: 14px; line-height: 1; }
+  .tag .remove:hover { color: var(--accent-red); }
+
+  /* ── TOAST ── */
+  .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 999; display: flex; flex-direction: column; gap: 10px; }
+  .toast {
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: 10px; padding: 12px 16px;
+    display: flex; align-items: center; gap: 10px;
+    min-width: 280px; max-width: 360px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    animation: toastIn 0.25s ease;
+  }
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateX(30px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .toast-icon { font-size: 18px; flex-shrink: 0; }
+  .toast-msg { font-size: 13px; font-weight: 500; }
+  .toast.success { border-left: 3px solid var(--accent-green); }
+  .toast.error { border-left: 3px solid var(--accent-red); }
+  .toast.info { border-left: 3px solid var(--accent-teal); }
+
+  /* ── EMPTY STATE ── */
+  .empty-state { text-align: center; padding: 40px 20px; }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
+  .empty-title { font-size: 15px; font-weight: 700; margin-bottom: 6px; color: var(--text-secondary); }
+  .empty-desc { font-size: 13px; color: var(--text-muted); }
+
+  /* ── DIVIDER ── */
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+  /* ── INPUT ADD-ON ── */
+  .input-group { display: flex; gap: 0; }
+  .input-addon {
+    padding: 9px 12px; background: var(--bg-hover);
+    border: 1px solid var(--border-light); border-radius: 8px 0 0 8px;
+    font-size: 13px; color: var(--text-muted);
+    border-right: none; display: flex; align-items: center;
+  }
+  .input-group input { border-radius: 0 8px 8px 0; }
+  .input-group .btn { border-radius: 0 8px 8px 0; margin: 0; }
+
+  /* ── SOAP SECTION ── */
+  .soap-label {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .soap-letter {
+    width: 22px; height: 22px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800; color: white;
+    flex-shrink: 0;
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+  /* ── RESPONSIVE FIX ── */
+  @media (max-width: 1200px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .vitals-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* ── COLOR UTILITIES ── */
+  .text-teal { color: var(--accent-teal); }
+  .text-green { color: var(--accent-green); }
+  .text-amber { color: var(--accent-amber); }
+  .text-red { color: var(--accent-red); }
+  .text-muted { color: var(--text-muted); }
+  .text-secondary { color: var(--text-secondary); }
+
+  /* ── MONO ── */
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  /* ── PAYMENT METHODS ── */
+  .pay-method-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
+  .pay-method-card {
+    background: var(--bg-dark); border: 2px solid var(--border);
+    border-radius: 10px; padding: 14px; cursor: pointer;
+    transition: all 0.15s; text-align: center;
+  }
+  .pay-method-card:hover { border-color: var(--border-light); }
+  .pay-method-card.selected { border-color: var(--accent-teal); background: var(--accent-teal-dim); }
+  .pay-method-card .pm-icon { font-size: 22px; margin-bottom: 6px; }
+  .pay-method-card .pm-name { font-size: 13px; font-weight: 600; }
+  .pay-method-card .pm-desc { font-size: 11px; color: var(--text-muted); }
+
+  /* ── SUMMARY NUMS ── */
+  .summary-pair {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 0; border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .summary-pair:last-child { border-bottom: none; }
+  .summary-pair .key { color: var(--text-secondary); }
+  .summary-pair .val { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  /* ── PROGRESS ── */
+  .progress-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 2px; background: var(--accent-teal); transition: width 0.5s ease; }
+
+  /* ── ICD SEARCH ── */
+  .icd-list { max-height: 180px; overflow-y: auto; margin-top: 8px; }
+  .icd-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: 6px; cursor: pointer; font-size: 12.5px;
+    transition: background 0.1s;
+  }
+  .icd-item:hover { background: var(--bg-hover); }
+  .icd-code { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent-teal); background: var(--accent-teal-dim); padding: 2px 6px; border-radius: 4px; }
+  .icd-desc { color: var(--text-secondary); }
+
+  /* ══════════════════════════════════════
+     AUTH SCREENS
+  ══════════════════════════════════════ */
+  .auth-root {
+    position: fixed; inset: 0; z-index: 9999;
+    background: var(--bg-dark);
+    display: flex; align-items: stretch;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+
+  /* Left decorative panel */
+  .auth-panel-left {
+    width: 42%;
+    background: linear-gradient(160deg, #0d1a2f 0%, #091523 60%, #05111e 100%);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    justify-content: space-between;
+    padding: 48px 52px;
+    position: relative; overflow: hidden;
+  }
+
+  .auth-panel-left::before {
+    content: '';
+    position: absolute; top: -120px; right: -120px;
+    width: 480px; height: 480px;
+    background: radial-gradient(circle, rgba(14,165,233,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .auth-panel-left::after {
+    content: '';
+    position: absolute; bottom: -80px; left: -80px;
+    width: 320px; height: 320px;
+    background: radial-gradient(circle, rgba(16,185,129,0.09) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .auth-brand { display: flex; align-items: center; gap: 12px; position: relative; z-index: 1; }
+  .auth-brand-mark {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, #0ea5e9, #10b981);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 16px; color: white;
+  }
+  .auth-brand-name { font-size: 20px; font-weight: 800; }
+  .auth-brand-sub { font-size: 11px; color: var(--text-muted); letter-spacing: 0.5px; text-transform: uppercase; margin-top: 1px; }
+
+  .auth-hero { position: relative; z-index: 1; }
+  .auth-hero-title {
+    font-size: 32px; font-weight: 800; line-height: 1.25;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, #f1f5f9 30%, #94a3b8);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .auth-hero-desc { font-size: 14px; color: var(--text-muted); line-height: 1.7; margin-bottom: 32px; }
+
+  .auth-features { display: flex; flex-direction: column; gap: 14px; }
+  .auth-feature {
+    display: flex; align-items: flex-start; gap: 12px;
+  }
+  .auth-feature-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--bg-card); border: 1px solid var(--border-light);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; flex-shrink: 0;
+  }
+  .auth-feature-text { font-size: 13px; color: var(--text-secondary); line-height: 1.5; }
+  .auth-feature-text strong { color: var(--text-primary); font-weight: 600; }
+
+  .auth-footer-text { font-size: 11.5px; color: var(--text-muted); position: relative; z-index: 1; }
+
+  /* Right form panel */
+  .auth-panel-right {
+    flex: 1;
+    display: flex; align-items: center; justify-content: center;
+    padding: 40px 32px;
+    overflow-y: auto;
+  }
+
+  .auth-form-wrap {
+    width: 100%; max-width: 420px;
+  }
+
+  .auth-view { display: none; }
+  .auth-view.active { display: block; }
+
+  .auth-form-title { font-size: 24px; font-weight: 800; margin-bottom: 6px; }
+  .auth-form-sub { font-size: 13.5px; color: var(--text-muted); margin-bottom: 32px; line-height: 1.5; }
+
+  .auth-form-group { margin-bottom: 18px; }
+  .auth-label {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 12px; font-weight: 600; color: var(--text-secondary);
+    margin-bottom: 7px;
+  }
+  .auth-label a { color: var(--accent-teal); cursor: pointer; font-size: 12px; }
+  .auth-label a:hover { text-decoration: underline; }
+
+  .auth-input-wrap { position: relative; }
+  .auth-input {
+    width: 100%; background: var(--bg-card);
+    border: 1.5px solid var(--border-light);
+    border-radius: 10px; padding: 11px 14px 11px 40px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14px; color: var(--text-primary);
+    outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .auth-input:focus {
+    border-color: var(--accent-teal);
+    box-shadow: 0 0 0 3px rgba(14,165,233,0.12);
+  }
+  .auth-input::placeholder { color: var(--text-muted); }
+  .auth-input-icon {
+    position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+    font-size: 15px; pointer-events: none;
+  }
+  .auth-input-toggle {
+    position: absolute; right: 13px; top: 50%; transform: translateY(-50%);
+    cursor: pointer; color: var(--text-muted); font-size: 15px;
+    transition: color 0.15s;
+  }
+  .auth-input-toggle:hover { color: var(--text-secondary); }
+  .auth-input.has-toggle { padding-right: 40px; }
+
+  .auth-error {
+    display: none;
+    background: var(--accent-red-dim); border: 1px solid rgba(239,68,68,0.3);
+    color: var(--accent-red); border-radius: 8px;
+    padding: 11px 14px; font-size: 13px; margin-bottom: 18px;
+    align-items: center; gap: 8px;
+  }
+  .auth-error.show { display: flex; }
+
+  .auth-btn {
+    width: 100%; padding: 12px;
+    background: linear-gradient(135deg, #0ea5e9, #0284c7);
+    color: white; border: none; border-radius: 10px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 14.5px; font-weight: 700; cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    position: relative; overflow: hidden;
+  }
+  .auth-btn:hover { opacity: 0.92; }
+  .auth-btn:active { transform: scale(0.99); }
+  .auth-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .auth-btn-loading::after {
+    content: '';
+    position: absolute; top: 50%; left: 50%;
+    width: 18px; height: 18px;
+    margin: -9px 0 0 -9px;
+    border: 2.5px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .auth-divider {
+    display: flex; align-items: center; gap: 12px;
+    margin: 20px 0; color: var(--text-muted); font-size: 12px;
+  }
+  .auth-divider::before, .auth-divider::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+
+  .auth-link-row {
+    text-align: center; font-size: 13px; color: var(--text-muted);
+    margin-top: 20px;
+  }
+  .auth-link-row a { color: var(--accent-teal); cursor: pointer; font-weight: 600; }
+  .auth-link-row a:hover { text-decoration: underline; }
+
+  .role-selector {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    margin-bottom: 6px;
+  }
+  .role-card {
+    background: var(--bg-dark); border: 1.5px solid var(--border);
+    border-radius: 8px; padding: 10px 12px; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .role-card:hover { border-color: var(--border-light); }
+  .role-card.selected { border-color: var(--accent-teal); background: var(--accent-teal-dim); }
+  .role-card-icon { font-size: 18px; margin-bottom: 4px; }
+  .role-card-name { font-size: 12.5px; font-weight: 600; }
+
+  .auth-hint {
+    background: var(--accent-teal-dim); border: 1px solid rgba(14,165,233,0.2);
+    border-radius: 8px; padding: 11px 14px; font-size: 12.5px;
+    color: var(--accent-teal); margin-bottom: 20px; line-height: 1.5;
+  }
+
+  .password-strength { margin-top: 6px; }
+  .strength-bar { display: flex; gap: 3px; margin-bottom: 4px; }
+  .strength-seg {
+    flex: 1; height: 3px; border-radius: 2px;
+    background: var(--border); transition: background 0.3s;
+  }
+  .strength-label { font-size: 11px; color: var(--text-muted); }
+
+  .check-row {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; margin-bottom: 14px; cursor: pointer;
+  }
+  .check-row input[type=checkbox] { accent-color: var(--accent-teal); width: 15px; height: 15px; cursor: pointer; }
+  .check-row span { color: var(--text-secondary); }
+  .check-row a { color: var(--accent-teal); }
+
+  /* Animated fade-in */
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(14px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .auth-form-wrap { animation: fadeSlide 0.3s ease; }
+
+  /* Hide app until logged in */
+  .app-root { display: none; }
+  .app-root.visible { display: flex; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     AUTH SCREENS
+══════════════════════════════════════ -->
+<div class="auth-root" id="auth-root">
+
+  <!-- LEFT PANEL -->
+  <div class="auth-panel-left">
+    <div class="auth-brand">
+      <div class="auth-brand-mark">6H</div>
+      <div>
+        <div class="auth-brand-name">6030Health</div>
+        <div class="auth-brand-sub">Cloud EMR Platform</div>
+      </div>
+    </div>
+
+    <div class="auth-hero">
+      <div class="auth-hero-title">The modern EMR Africa's hospitals deserve</div>
+      <div class="auth-hero-desc">Securely access patient records, clinical notes, billing, and reports — all in one place.</div>
+      <div class="auth-features">
+        <div class="auth-feature">
+          <div class="auth-feature-icon">🔐</div>
+          <div class="auth-feature-text"><strong>Role-Based Access</strong><br>Every staff member sees only what their role requires.</div>
+        </div>
+        <div class="auth-feature">
+          <div class="auth-feature-icon">🛡️</div>
+          <div class="auth-feature-text"><strong>End-to-End Encrypted</strong><br>TLS 1.3 in transit. AES-256 at rest on AWS RDS.</div>
+        </div>
+        <div class="auth-feature">
+          <div class="auth-feature-icon">⏱️</div>
+          <div class="auth-feature-text"><strong>Auto Logout</strong><br>Sessions expire after 30 minutes of inactivity.</div>
+        </div>
+        <div class="auth-feature">
+          <div class="auth-feature-icon">📋</div>
+          <div class="auth-feature-text"><strong>Full Audit Trail</strong><br>Every action is logged — who, what, and when.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="auth-footer-text">© 2026 6030 Technologies · NDPR Compliant · AWS Lagos Region</div>
+  </div>
+
+  <!-- RIGHT PANEL — multiple views -->
+  <div class="auth-panel-right">
+    <div class="auth-form-wrap" id="auth-form-wrap">
+
+      <!-- VIEW: LOGIN -->
+      <div class="auth-view active" id="view-login">
+        <div class="auth-form-title">Welcome back</div>
+        <div class="auth-form-sub">Sign in to your 6030Health workspace to continue.</div>
+
+        <div class="auth-hint">
+          🧪 <strong>Demo login:</strong> Use any email + password <strong>Demo1234</strong>, or pick a role below.
+        </div>
+
+        <!-- Quick role picker for demo -->
+        <div style="margin-bottom:18px">
+          <div class="auth-label" style="margin-bottom:8px">Quick Sign-In As</div>
+          <div class="role-selector">
+            <div class="role-card selected" onclick="demoRole(this,'s.adeyemi@hospital.ng','System Admin')">
+              <div class="role-card-icon">👩‍⚕️</div>
+              <div class="role-card-name">System Admin</div>
+            </div>
+            <div class="role-card" onclick="demoRole(this,'c.eze@hospital.ng','Doctor')">
+              <div class="role-card-icon">🩺</div>
+              <div class="role-card-name">Doctor</div>
+            </div>
+            <div class="role-card" onclick="demoRole(this,'a.nwosu@hospital.ng','Nurse')">
+              <div class="role-card-icon">💊</div>
+              <div class="role-card-name">Nurse</div>
+            </div>
+            <div class="role-card" onclick="demoRole(this,'b.okonkwo@hospital.ng','Billing Officer')">
+              <div class="role-card-icon">💳</div>
+              <div class="role-card-name">Billing Officer</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="auth-error" id="login-error">
+          ⚠️ <span id="login-error-msg">Invalid email or password. Please try again.</span>
+        </div>
+
+        <div class="auth-form-group">
+          <div class="auth-label">Email Address</div>
+          <div class="auth-input-wrap">
+            <span class="auth-input-icon">✉️</span>
+            <input class="auth-input" type="email" id="login-email" placeholder="you@hospital.ng" value="s.adeyemi@hospital.ng">
+          </div>
+        </div>
+
+        <div class="auth-form-group">
+          <div class="auth-label">
+            Password
+            <a onclick="showView('view-forgot')">Forgot password?</a>
+          </div>
+          <div class="auth-input-wrap">
+            <span class="auth-input-icon">🔑</span>
+            <input class="auth-input has-toggle" type="password" id="login-password" placeholder="Enter your password" value="Demo1234">
+            <span class="auth-input-toggle" onclick="togglePwd('login-password', this)">👁️</span>
+          </div>
+        </div>
+
+        <div class="check-row">
+          <input type="checkbox" id="remember-me" checked>
+          <span>Remember me for 7 days</span>
+        </div>
+
+        <button class="auth-btn" id="login-btn" onclick="doLogin()">Sign In</button>
+
+        <div class="auth-divider">or</div>
+
+        <div class="auth-link-row">
+          New hospital? <a onclick="showView('view-register-hospital')">Set up your account →</a>
+        </div>
+      </div>
+
+      <!-- VIEW: FORGOT PASSWORD -->
+      <div class="auth-view" id="view-forgot">
+        <div class="auth-form-title">Reset your password</div>
+        <div class="auth-form-sub">Enter your work email and we'll send you a reset link.</div>
+
+        <div class="auth-form-group">
+          <div class="auth-label">Work Email</div>
+          <div class="auth-input-wrap">
+            <span class="auth-input-icon">✉️</span>
+            <input class="auth-input" type="email" placeholder="you@hospital.ng">
+          </div>
+        </div>
+
+        <button class="auth-btn" onclick="doForgot()">Send Reset Link</button>
+
+        <div class="auth-link-row" style="margin-top:16px">
+          <a onclick="showView('view-login')">← Back to Sign In</a>
+        </div>
+      </div>
+
+      <!-- VIEW: FORGOT SUCCESS -->
+      <div class="auth-view" id="view-forgot-sent">
+        <div style="text-align:center;padding:20px 0">
+          <div style="font-size:52px;margin-bottom:16px">📧</div>
+          <div class="auth-form-title" style="text-align:center">Check your inbox</div>
+          <div class="auth-form-sub" style="text-align:center">We've sent a password reset link to your email. It expires in 30 minutes.</div>
+          <button class="auth-btn" style="margin-top:24px" onclick="showView('view-login')">Back to Sign In</button>
+        </div>
+      </div>
+
+      <!-- VIEW: HOSPITAL REGISTRATION (step 1 of 3) -->
+      <div class="auth-view" id="view-register-hospital">
+        <div class="auth-form-title">Set up your hospital</div>
+        <div class="auth-form-sub">Create your 6030Health workspace. This takes under 2 minutes.</div>
+
+        <!-- Steps -->
+        <div style="display:flex;align-items:center;gap:0;margin-bottom:28px">
+          <div id="rs1" style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--accent-teal)">
+            <div style="width:22px;height:22px;border-radius:50%;background:var(--accent-teal);display:flex;align-items:center;justify-content:center;font-size:11px;color:white;font-weight:700;flex-shrink:0">1</div>
+            Hospital Info
+          </div>
+          <div style="flex:1;height:1px;background:var(--border);margin:0 8px"></div>
+          <div id="rs2" style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-muted)">
+            <div style="width:22px;height:22px;border-radius:50%;background:var(--bg-hover);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text-muted);font-weight:700;flex-shrink:0">2</div>
+            Admin Account
+          </div>
+          <div style="flex:1;height:1px;background:var(--border);margin:0 8px"></div>
+          <div id="rs3" style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-muted)">
+            <div style="width:22px;height:22px;border-radius:50%;background:var(--bg-hover);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--text-muted);font-weight:700;flex-shrink:0">3</div>
+            Confirmation
+          </div>
+        </div>
+
+        <!-- Step 1 content -->
+        <div id="reg-h-step1">
+          <div class="auth-form-group">
+            <div class="auth-label">Hospital / Clinic Name *</div>
+            <div class="auth-input-wrap">
+              <span class="auth-input-icon">🏥</span>
+              <input class="auth-input" type="text" id="h-name" placeholder="e.g. Lagos Metropolitan Medical Services">
+            </div>
+          </div>
+          <div class="auth-form-group">
+            <div class="auth-label">State *</div>
+            <div class="auth-input-wrap">
+              <span class="auth-input-icon">📍</span>
+              <select class="auth-input" id="h-state" style="padding-left:40px">
+                <option value="">Select state…</option>
+                <option>Lagos</option><option>Abuja FCT</option><option>Ogun</option>
+                <option>Oyo</option><option>Rivers</option><option>Kano</option>
+                <option>Kaduna</option><option>Delta</option><option>Edo</option><option>Anambra</option>
+              </select>
+            </div>
+          </div>
+          <div class="auth-form-group">
+            <div class="auth-label">Phone Number *</div>
+            <div class="auth-input-wrap">
+              <span class="auth-input-icon">📞</span>
+              <input class="auth-input" type="tel" id="h-phone" placeholder="+234 801 234 5678">
+            </div>
+          </div>
+          <button class="auth-btn" onclick="regHospStep(2)">Continue →</button>
+        </div>
+
+        <!-- Step 2 content -->
+        <div id="reg-h-step2" style="display:none">
+          <div class="auth-hint">This account will have full System Admin access.</div>
+          <div class="auth-form-group">
+            <div class="auth-label">Full Name *</div>
+            <div class="auth-input-wrap">
+              <span class="auth-input-icon">👤</span>
+              <input class="auth-input" type="text" id="h-admin-name" placeholder="Dr. Sarah Adeyemi">
+            </div>
+          </div>
+          <div class="auth-form-group">
+            <div class="auth-label">Work Email *</div>
+            <div class="auth-input-wrap">
+              <span class="auth-input-icon">✉️</span>
+              <input class="auth-input" type="email" id="h-admin-email" placeholder="admin@yourhospital.ng">
+            </div>
+          </div>
+          <div class="auth-form-group">
+            <div class="auth-label">Create Password *</div>
+            <div class="auth-input-wrap">
+              <span class="auth-input-icon">🔑</span>
+              <input class="auth-input has-toggle" type="password" id="h-admin-pwd" placeholder="Min 8 chars, mixed case + number" oninput="checkStrength(this.value)">
+              <span class="auth-input-toggle" onclick="togglePwd('h-admin-pwd',this)">👁️</span>
+            </div>
+            <div class="password-strength">
+              <div class="strength-bar">
+                <div class="strength-seg" id="seg1"></div>
+                <div class="strength-seg" id="seg2"></div>
+                <div class="strength-seg" id="seg3"></div>
+                <div class="strength-seg" id="seg4"></div>
+              </div>
+              <div class="strength-label" id="strength-label">Enter a password</div>
+            </div>
+          </div>
+          <div class="check-row">
+            <input type="checkbox" id="accept-terms">
+            <span>I agree to the <a>Terms of Service</a> and <a>Privacy Policy</a></span>
+          </div>
+          <div style="display:flex;gap:10px">
+            <button class="auth-btn" style="background:var(--bg-hover);color:var(--text-primary);flex:0 0 auto;width:auto;padding:12px 18px" onclick="regHospStep(1)">← Back</button>
+            <button class="auth-btn" onclick="regHospStep(3)" style="flex:1">Create Account →</button>
+          </div>
+        </div>
+
+        <!-- Step 3 content -->
+        <div id="reg-h-step3" style="display:none;text-align:center;padding:10px 0">
+          <div style="font-size:48px;margin-bottom:16px">🎉</div>
+          <div class="auth-form-title" style="text-align:center">You're all set!</div>
+          <div class="auth-form-sub" style="text-align:center">Your 6030Health workspace has been created. Sign in to get started.</div>
+          <div style="background:var(--bg-dark);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:left;margin:20px 0">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Workspace Details</div>
+            <div style="font-size:13px;color:var(--text-secondary);margin-bottom:6px">🏥 <span id="confirm-hosp-name" style="color:var(--text-primary);font-weight:600">—</span></div>
+            <div style="font-size:13px;color:var(--text-secondary);margin-bottom:6px">📧 <span id="confirm-admin-email" style="color:var(--text-primary)">—</span></div>
+            <div style="font-size:13px;color:var(--text-secondary)">🔐 Role: <span style="color:var(--accent-purple);font-weight:600">System Admin</span></div>
+          </div>
+          <button class="auth-btn" onclick="proceedToDashboard()">Go to Dashboard →</button>
+        </div>
+
+        <div class="auth-link-row" style="margin-top:16px" id="back-to-login-link">
+          Already have an account? <a onclick="showView('view-login')">Sign In</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     APP (hidden until auth)
+══════════════════════════════════════ -->
+<div class="app-root" id="app-root">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">6H</div>
+    <div class="logo-text">
+      <span class="logo-name">6030Health</span>
+      <span class="logo-sub">EMR Platform</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Main</div>
+    <a class="nav-item active" onclick="showPage('dashboard')">
+      <span class="nav-icon">📊</span> Dashboard
+    </a>
+    <a class="nav-item" onclick="showPage('patients')">
+      <span class="nav-icon">👥</span> Patients
+      <span class="nav-badge">247</span>
+    </a>
+    <a class="nav-item" onclick="showPage('queue')">
+      <span class="nav-icon">🔢</span> OPD Queue
+      <span class="nav-badge amber">8</span>
+    </a>
+    <a class="nav-item" onclick="showPage('consultation')">
+      <span class="nav-icon">🩺</span> Consultation
+    </a>
+    <a class="nav-item" onclick="showPage('billing')">
+      <span class="nav-icon">📋</span> Billing
+      <span class="nav-badge amber">3</span>
+    </a>
+
+    <div class="nav-section-label">Finance</div>
+    <a class="nav-item" onclick="showPage('payments')">
+      <span class="nav-icon">💳</span> Payments
+    </a>
+    <a class="nav-item" onclick="showPage('reports')">
+      <span class="nav-icon">📈</span> Reports
+    </a>
+
+    <div class="nav-section-label">Admin</div>
+    <a class="nav-item" onclick="showPage('users')">
+      <span class="nav-icon">👤</span> Users
+    </a>
+    <a class="nav-item" onclick="showPage('settings')">
+      <span class="nav-icon">⚙️</span> Settings
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button onclick="logout()" style="width:100%;display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--accent-red-dim);border:1px solid rgba(239,68,68,0.2);border-radius:8px;cursor:pointer;font-family:inherit;font-size:13.5px;font-weight:600;color:var(--accent-red);transition:all 0.15s" onmouseover="this.style.background='var(--accent-red)';this.style.color='white'" onmouseout="this.style.background='var(--accent-red-dim)';this.style.color='var(--accent-red)'">
+      <span style="font-size:16px">⏻</span> Logout
+    </button>
+  </div>
+</aside>
+
+<!-- MAIN WRAPPER -->
+<div class="main-wrapper">
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <span class="page-title" id="page-title">Dashboard</span>
+    <div class="search-bar">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Search patients by name, MRN, or phone…" id="global-search" oninput="globalSearch(this.value)">
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-primary" onclick="openModal('modal-register')">+ New Patient</button>
+      <div class="icon-btn" title="Notifications">🔔<div class="notif-dot"></div></div>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <!-- ════════════════════ DASHBOARD ════════════════════ -->
+    <div class="page active" id="page-dashboard">
+      <div class="section-header">
+        <div class="section-title">Good morning, Dr. Sarah 👋</div>
+        <div class="section-desc">Today is Thursday, 19 February 2026</div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card teal">
+          <div class="stat-label">Total Revenue Today</div>
+          <div class="stat-value teal">₦284,500</div>
+          <div class="stat-meta"><span class="stat-up">↑ 12%</span> vs yesterday (₦253,700)</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Patients Seen Today</div>
+          <div class="stat-value green">38</div>
+          <div class="stat-meta"><span class="stat-up">↑ 5</span> encounters completed today</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-label">Currently in Queue</div>
+          <div class="stat-value amber">8</div>
+          <div class="stat-meta">3 departments • Avg wait <span class="stat-up">22 min</span></div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-label">Outstanding Balances</div>
+          <div class="stat-value red">₦67,200</div>
+          <div class="stat-meta">12 invoices unpaid or partial</div>
+        </div>
+      </div>
+
+      <div class="grid-2-1">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Revenue This Week</div>
+              <div class="card-subtitle">Daily breakdown — Mon to Sun</div>
+            </div>
+            <span class="badge badge-green">+18% this week</span>
+          </div>
+          <div style="margin-bottom:8px">
+            <div class="mini-bar-chart" style="height:70px">
+              <div class="bar" style="height:45%" title="Mon ₦145k"></div>
+              <div class="bar" style="height:68%" title="Tue ₦218k"></div>
+              <div class="bar" style="height:52%" title="Wed ₦167k"></div>
+              <div class="bar" style="height:80%" title="Thu ₦256k"></div>
+              <div class="bar highlight" style="height:89%" title="Today ₦284k"></div>
+              <div class="bar" style="height:20%" title="Sat ₦0"></div>
+              <div class="bar" style="height:20%" title="Sun ₦0"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:4px">
+              <span style="font-size:10px;color:var(--text-muted)">Mon</span>
+              <span style="font-size:10px;color:var(--text-muted)">Tue</span>
+              <span style="font-size:10px;color:var(--text-muted)">Wed</span>
+              <span style="font-size:10px;color:var(--text-muted)">Thu</span>
+              <span style="font-size:10px;color:var(--accent-teal)">Today</span>
+              <span style="font-size:10px;color:var(--text-muted)">Sat</span>
+              <span style="font-size:10px;color:var(--text-muted)">Sun</span>
+            </div>
+          </div>
+          <div class="divider" style="margin:12px 0"></div>
+          <div class="rev-row">
+            <div class="rev-method"><div class="rev-dot" style="background:#10b981"></div>Cash</div>
+            <div class="rev-bar-wrap"><div class="rev-bar-bg"><div class="rev-bar-fill" style="width:65%;background:#10b981"></div></div></div>
+            <div class="rev-amount">₦185,000</div>
+            <div class="rev-count">28 txns</div>
+          </div>
+          <div class="rev-row">
+            <div class="rev-method"><div class="rev-dot" style="background:#0ea5e9"></div>Paystack</div>
+            <div class="rev-bar-wrap"><div class="rev-bar-bg"><div class="rev-bar-fill" style="width:30%;background:#0ea5e9"></div></div></div>
+            <div class="rev-amount">₦72,500</div>
+            <div class="rev-count">11 txns</div>
+          </div>
+          <div class="rev-row">
+            <div class="rev-method"><div class="rev-dot" style="background:#f59e0b"></div>POS/Card</div>
+            <div class="rev-bar-wrap"><div class="rev-bar-bg"><div class="rev-bar-fill" style="width:10%;background:#f59e0b"></div></div></div>
+            <div class="rev-amount">₦27,000</div>
+            <div class="rev-count">4 txns</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">Quick Actions</div></div>
+          </div>
+          <div style="display:grid;gap:8px">
+            <button class="btn btn-ghost" style="justify-content:flex-start;width:100%;padding:11px 14px" onclick="openModal('modal-register')">
+              <span>👤</span> Register New Patient
+            </button>
+            <button class="btn btn-ghost" style="justify-content:flex-start;width:100%;padding:11px 14px" onclick="showPage('queue')">
+              <span>🔢</span> View OPD Queue
+            </button>
+            <button class="btn btn-ghost" style="justify-content:flex-start;width:100%;padding:11px 14px" onclick="showPage('billing')">
+              <span>📋</span> New Invoice
+            </button>
+            <button class="btn btn-ghost" style="justify-content:flex-start;width:100%;padding:11px 14px" onclick="showPage('reports')">
+              <span>📈</span> Daily Reports
+            </button>
+          </div>
+
+          <div class="divider"></div>
+          <div class="card-title" style="margin-bottom:12px;font-size:13px">System Status</div>
+          <div class="summary-pair"><span class="key">Database</span><span class="badge badge-green">● Online</span></div>
+          <div class="summary-pair"><span class="key">Paystack</span><span class="badge badge-green">● Connected</span></div>
+          <div class="summary-pair"><span class="key">Flutterwave</span><span class="badge badge-green">● Connected</span></div>
+          <div class="summary-pair"><span class="key">AWS S3</span><span class="badge badge-green">● Healthy</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div><div class="card-title">Recent Encounters</div><div class="card-subtitle">Today's consultations</div></div>
+          <button class="btn btn-ghost btn-sm" onclick="showPage('patients')">View All</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <tr><th>Patient</th><th>MRN</th><th>Department</th><th>Doctor</th><th>Time</th><th>Status</th><th>Invoice</th></tr>
+            <tr>
+              <td><div class="patient-cell"><div class="avatar av-teal">AA</div><div><div class="patient-name">Adebayo Akinwale</div></div></div></td>
+              <td><span class="mono text-muted" style="font-size:11.5px">6030-LGMS-000047</span></td>
+              <td>General Practice</td><td>Dr. Eze</td><td>09:14 AM</td>
+              <td><span class="badge badge-green">Complete</span></td>
+              <td><span class="badge badge-teal">₦15,000</span></td>
+            </tr>
+            <tr>
+              <td><div class="patient-cell"><div class="avatar av-green">FO</div><div><div class="patient-name">Fatima Okonkwo</div></div></div></td>
+              <td><span class="mono text-muted" style="font-size:11.5px">6030-LGMS-000103</span></td>
+              <td>Obstetrics</td><td>Dr. Adeyemi</td><td>10:35 AM</td>
+              <td><span class="badge badge-amber">In Progress</span></td>
+              <td><span class="badge badge-muted">Draft</span></td>
+            </tr>
+            <tr>
+              <td><div class="patient-cell"><div class="avatar av-purple">CU</div><div><div class="patient-name">Chioma Uzoma</div></div></div></td>
+              <td><span class="mono text-muted" style="font-size:11.5px">6030-LGMS-000092</span></td>
+              <td>Paediatrics</td><td>Dr. Balogun</td><td>11:02 AM</td>
+              <td><span class="badge badge-green">Complete</span></td>
+              <td><span class="badge badge-green">Paid</span></td>
+            </tr>
+            <tr>
+              <td><div class="patient-cell"><div class="avatar av-amber">IM</div><div><div class="patient-name">Ibrahim Musa</div></div></div></td>
+              <td><span class="mono text-muted" style="font-size:11.5px">6030-LGMS-000250</span></td>
+              <td>A&amp;E</td><td>Dr. Okolo</td><td>12:18 PM</td>
+              <td><span class="badge badge-red">Emergency</span></td>
+              <td><span class="badge badge-amber">Partial</span></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════ PATIENTS ════════════════════ -->
+    <div class="page" id="page-patients">
+      <div class="section-header" style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div class="section-title">Patient Registry</div>
+          <div class="section-desc">247 registered patients · Search and manage records</div>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('modal-register')">+ Register Patient</button>
+      </div>
+
+      <div class="card" style="margin-bottom:16px">
+        <div style="display:flex;gap:12px;align-items:center">
+          <div class="search-bar" style="max-width:100%;flex:1">
+            <span class="search-icon">🔍</span>
+            <input type="text" placeholder="Search by name, MRN, phone number…" oninput="filterPatients(this.value)" id="patient-search-input">
+          </div>
+          <select style="width:160px">
+            <option>All Departments</option>
+            <option>General Practice</option>
+            <option>Paediatrics</option>
+            <option>Obstetrics</option>
+            <option>A&E</option>
+          </select>
+          <select style="width:140px">
+            <option>All Genders</option>
+            <option>Male</option>
+            <option>Female</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table id="patients-table">
+            <thead>
+              <tr><th>Patient</th><th>MRN</th><th>Age / Gender</th><th>Phone</th><th>Last Visit</th><th>Balance</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="patients-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════ OPD QUEUE ════════════════════ -->
+    <div class="page" id="page-queue">
+      <div class="section-header" style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div class="section-title">OPD Queue</div>
+          <div class="section-desc">8 patients waiting across 3 departments</div>
+        </div>
+        <div style="display:flex;gap:10px">
+          <select style="width:180px">
+            <option>All Departments</option>
+            <option>General Practice</option>
+            <option>Paediatrics</option>
+            <option>A&E</option>
+          </select>
+          <button class="btn btn-primary" onclick="openModal('modal-checkin')">Check-In Patient</button>
+        </div>
+      </div>
+
+      <div class="grid-3" style="margin-bottom:16px">
+        <div class="stat-card amber">
+          <div class="stat-label">Waiting</div>
+          <div class="stat-value amber">5</div>
+          <div class="stat-meta">Avg wait 22 mins</div>
+        </div>
+        <div class="stat-card teal">
+          <div class="stat-label">In Consultation</div>
+          <div class="stat-value teal">2</div>
+          <div class="stat-meta">2 doctors active</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Completed Today</div>
+          <div class="stat-value green">31</div>
+          <div class="stat-meta">Since 7:00 AM</div>
+        </div>
+      </div>
+
+      <div id="queue-list"></div>
+    </div>
+
+    <!-- ════════════════════ CONSULTATION ════════════════════ -->
+    <div class="page" id="page-consultation">
+      <!-- Patient Banner -->
+      <div class="patient-banner">
+        <div class="banner-avatar">FO</div>
+        <div style="flex:1">
+          <div class="banner-name">Fatima Okonkwo
+            <span class="allergy-chip">⚠️ Penicillin</span>
+          </div>
+          <div class="banner-meta">28F · DOB: 14 Mar 1997 · 📞 0803-456-7890</div>
+          <div class="banner-mrn">MRN: 6030-LGMS-000103 · Encounter: ENC-2026-02-19-0042</div>
+        </div>
+        <div style="text-align:right">
+          <div class="badge badge-amber" style="margin-bottom:6px">In Consultation</div>
+          <div style="font-size:11.5px;color:var(--text-muted)">Started 10:35 AM</div>
+          <div style="font-size:11.5px;color:var(--text-muted)">Dr. S. Adeyemi</div>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <div class="tab active" onclick="showTab('tab-soap', this)">SOAP Notes</div>
+        <div class="tab" onclick="showTab('tab-vitals', this)">Vitals</div>
+        <div class="tab" onclick="showTab('tab-history', this)">Med. History</div>
+        <div class="tab" onclick="showTab('tab-billing', this)">Billing</div>
+        <div class="tab" onclick="showTab('tab-visits', this)">Visit History</div>
+      </div>
+
+      <!-- SOAP TAB -->
+      <div class="tab-pane active" id="tab-soap">
+        <div class="grid-2">
+          <div>
+            <div class="form-group">
+              <div class="soap-label">
+                <div class="soap-letter" style="background:#0ea5e9">S</div>
+                Subjective — Chief Complaint
+              </div>
+              <textarea rows="4" placeholder="Patient's presenting complaint and history of presenting illness…">Patient complains of persistent lower abdominal pain for 3 days, associated with fever and nausea. No vomiting. Last menstrual period was 6 weeks ago.</textarea>
+            </div>
+            <div class="form-group">
+              <div class="soap-label">
+                <div class="soap-letter" style="background:#10b981">O</div>
+                Objective — Examination Findings
+              </div>
+              <textarea rows="4" placeholder="Physical examination findings, linked vitals…">BP: 122/78 mmHg, Temp: 37.8°C, PR: 96 bpm, SpO2: 98%
+Abdomen: Mild tenderness in lower quadrants, no guarding or rigidity. Uterus appears slightly enlarged.</textarea>
+            </div>
+          </div>
+          <div>
+            <div class="form-group">
+              <div class="soap-label">
+                <div class="soap-letter" style="background:#f59e0b">A</div>
+                Assessment — Diagnosis
+              </div>
+              <textarea rows="2" placeholder="Clinical assessment and differential diagnoses…">Possible ectopic pregnancy vs early intrauterine pregnancy with threatened miscarriage. Pelvic inflammatory disease to be excluded.</textarea>
+            </div>
+            <div class="form-group">
+              <label>ICD-10 Diagnosis Search</label>
+              <div class="search-bar" style="max-width:100%">
+                <span class="search-icon">🔍</span>
+                <input type="text" placeholder="Search diagnosis code or name…" oninput="searchICD(this.value)">
+              </div>
+              <div class="icd-list" id="icd-results"></div>
+              <div class="tag-list" id="icd-selected">
+                <div class="tag"><span class="icd-code" style="font-size:10px">O00.9</span> Ectopic pregnancy, unspecified <span class="remove">×</span></div>
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="soap-label">
+                <div class="soap-letter" style="background:#8b5cf6">P</div>
+                Plan — Management
+              </div>
+              <textarea rows="4" placeholder="Treatment plan, investigations, referrals, follow-up…">1. Urgent pelvic ultrasound
+2. urine pregnancy test (stat)
+3. FBC, CRP
+4. IV access established, fluid resuscitation
+5. Obs/Gyn consult STAT</textarea>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
+          <button class="btn btn-ghost">💾 Save Draft</button>
+          <button class="btn btn-success" onclick="closeEncounter()">✓ Complete Encounter</button>
+        </div>
+      </div>
+
+      <!-- VITALS TAB -->
+      <div class="tab-pane" id="tab-vitals">
+        <div class="vitals-grid">
+          <div class="vital-card">
+            <div class="vital-label">Blood Pressure</div>
+            <div class="vital-value text-green">122<span style="font-size:14px">/</span>78</div>
+            <div class="vital-unit">mmHg</div>
+            <div class="vital-flag"><span class="badge badge-green" style="font-size:10px">Normal</span></div>
+          </div>
+          <div class="vital-card">
+            <div class="vital-label">Temperature</div>
+            <div class="vital-value text-amber">37.8</div>
+            <div class="vital-unit">°C</div>
+            <div class="vital-flag"><span class="badge badge-amber" style="font-size:10px">Elevated</span></div>
+          </div>
+          <div class="vital-card">
+            <div class="vital-label">Pulse Rate</div>
+            <div class="vital-value text-amber">96</div>
+            <div class="vital-unit">bpm</div>
+            <div class="vital-flag"><span class="badge badge-amber" style="font-size:10px">High Normal</span></div>
+          </div>
+          <div class="vital-card">
+            <div class="vital-label">SpO2</div>
+            <div class="vital-value text-green">98</div>
+            <div class="vital-unit">%</div>
+            <div class="vital-flag"><span class="badge badge-green" style="font-size:10px">Normal</span></div>
+          </div>
+          <div class="vital-card">
+            <div class="vital-label">Weight</div>
+            <div class="vital-value">63</div>
+            <div class="vital-unit">kg</div>
+          </div>
+          <div class="vital-card">
+            <div class="vital-label">Height</div>
+            <div class="vital-value">162</div>
+            <div class="vital-unit">cm</div>
+          </div>
+          <div class="vital-card">
+            <div class="vital-label">BMI</div>
+            <div class="vital-value text-teal">24.0</div>
+            <div class="vital-unit">kg/m²</div>
+            <div class="vital-flag"><span class="badge badge-green" style="font-size:10px">Healthy</span></div>
+          </div>
+          <div class="vital-card">
+            <div class="vital-label">Resp. Rate</div>
+            <div class="vital-value">18</div>
+            <div class="vital-unit">breaths/min</div>
+            <div class="vital-flag"><span class="badge badge-green" style="font-size:10px">Normal</span></div>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="openModal('modal-vitals')">📝 Update Vitals</button>
+      </div>
+
+      <!-- HISTORY TAB -->
+      <div class="tab-pane" id="tab-history">
+        <div class="grid-2">
+          <div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="card-title" style="margin-bottom:12px">⚠️ Allergies</div>
+              <div class="tag-list">
+                <div class="tag" style="background:var(--accent-red-dim);color:var(--accent-red);border-color:transparent">Penicillin — Anaphylaxis (Severe) <span class="remove">×</span></div>
+                <div class="tag" style="background:var(--accent-amber-dim);color:var(--accent-amber);border-color:transparent">Codeine — Rash (Mild) <span class="remove">×</span></div>
+              </div>
+              <div style="margin-top:12px;display:flex;gap:8px">
+                <input type="text" placeholder="Allergen name…" style="flex:1">
+                <button class="btn btn-ghost btn-sm">+ Add</button>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-title" style="margin-bottom:12px">🏥 Past Medical History</div>
+              <textarea rows="4" placeholder="Relevant past medical conditions…">Asthma (childhood, resolved)
+Gestational hypertension in previous pregnancy (2023)</textarea>
+            </div>
+          </div>
+          <div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="card-title" style="margin-bottom:12px">✂️ Surgical History</div>
+              <textarea rows="3" placeholder="Previous surgical procedures…">Appendectomy — 2018 (Lagos University Teaching Hospital)</textarea>
+            </div>
+            <div class="card" style="margin-bottom:16px">
+              <div class="card-title" style="margin-bottom:12px">👨‍👩‍👧 Family History</div>
+              <textarea rows="3" placeholder="Significant family history…">Father: Hypertension, Type 2 Diabetes
+Mother: No significant illness</textarea>
+            </div>
+            <div class="card">
+              <div class="card-title" style="margin-bottom:12px">🚬 Social History</div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Smoking</label>
+                  <select><option>Non-smoker</option><option>Current</option><option>Ex-smoker</option></select>
+                </div>
+                <div class="form-group">
+                  <label>Alcohol</label>
+                  <select><option>None</option><option>Occasional</option><option>Regular</option></select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="showToast('Medical history saved', 'success')">💾 Save History</button>
+      </div>
+
+      <!-- BILLING TAB (in consultation) -->
+      <div class="tab-pane" id="tab-billing">
+        <div class="card">
+          <div class="card-header">
+            <div><div class="card-title">Invoice — ENC-2026-02-19-0042</div><div class="card-subtitle">Fatima Okonkwo · 6030-LGMS-000103</div></div>
+            <span class="badge badge-amber">Draft</span>
+          </div>
+
+          <div style="margin-bottom:16px">
+            <div style="display:flex;gap:8px;margin-bottom:12px">
+              <input type="text" placeholder="Search and add service…" style="flex:1" id="service-search">
+              <button class="btn btn-ghost btn-sm" onclick="addServiceLine()">+ Add Service</button>
+            </div>
+            <div id="invoice-lines">
+              <div class="invoice-line">
+                <div class="inv-name">Consultation Fee (OPD)</div>
+                <div class="inv-qty"><input type="number" value="1" style="width:50px;padding:4px 6px"></div>
+                <div class="inv-price">₦5,000</div>
+                <div class="inv-total">₦5,000</div>
+                <button class="btn btn-danger btn-sm">✕</button>
+              </div>
+              <div class="invoice-line">
+                <div class="inv-name">Pelvic Ultrasound</div>
+                <div class="inv-qty"><input type="number" value="1" style="width:50px;padding:4px 6px"></div>
+                <div class="inv-price">₦18,000</div>
+                <div class="inv-total">₦18,000</div>
+                <button class="btn btn-danger btn-sm">✕</button>
+              </div>
+              <div class="invoice-line">
+                <div class="inv-name">FBC (Full Blood Count)</div>
+                <div class="inv-qty"><input type="number" value="1" style="width:50px;padding:4px 6px"></div>
+                <div class="inv-price">₦4,500</div>
+                <div class="inv-total">₦4,500</div>
+                <button class="btn btn-danger btn-sm">✕</button>
+              </div>
+              <div class="invoice-line">
+                <div class="inv-name">CRP (C-Reactive Protein)</div>
+                <div class="inv-qty"><input type="number" value="1" style="width:50px;padding:4px 6px"></div>
+                <div class="inv-price">₦3,500</div>
+                <div class="inv-total">₦3,500</div>
+                <button class="btn btn-danger btn-sm">✕</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="divider" style="margin:0 0 12px"></div>
+          <div class="invoice-total-row"><span class="inv-total-label">Subtotal</span><span class="inv-total-val">₦31,000</span></div>
+          <div class="invoice-total-row">
+            <span class="inv-total-label">Discount</span>
+            <span class="inv-total-val" style="display:flex;align-items:center;gap:6px;justify-content:flex-end">
+              <input type="text" value="0" style="width:60px;text-align:right;padding:4px 6px"> %
+            </span>
+          </div>
+          <div class="invoice-total-row inv-grand-total"><span class="inv-total-label">Net Total</span><span class="inv-total-val">₦31,000</span></div>
+
+          <div style="display:flex;gap:10px;margin-top:16px">
+            <button class="btn btn-ghost">🖨️ Print Invoice</button>
+            <button class="btn btn-primary" onclick="openModal('modal-payment')">💳 Collect Payment</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- VISIT HISTORY TAB -->
+      <div class="tab-pane" id="tab-visits">
+        <div class="card">
+          <table>
+            <tr><th>Date</th><th>Department</th><th>Doctor</th><th>Diagnosis</th><th>Amount</th><th>Status</th></tr>
+            <tr><td>14 Feb 2026</td><td>Obstetrics</td><td>Dr. Adeyemi</td><td><span class="mono text-teal" style="font-size:11px">Z34.0</span> Antenatal care</td><td>₦12,500</td><td><span class="badge badge-green">Paid</span></td></tr>
+            <tr><td>02 Jan 2026</td><td>General Practice</td><td>Dr. Eze</td><td><span class="mono text-teal" style="font-size:11px">J06.9</span> Upper resp. infection</td><td>₦8,000</td><td><span class="badge badge-green">Paid</span></td></tr>
+            <tr><td>11 Nov 2025</td><td>Obstetrics</td><td>Dr. Adeyemi</td><td><span class="mono text-teal" style="font-size:11px">Z12.4</span> Cervical screening</td><td>₦15,000</td><td><span class="badge badge-green">Paid</span></td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════ BILLING ════════════════════ -->
+    <div class="page" id="page-billing">
+      <div class="section-header" style="display:flex;align-items:center;justify-content:space-between">
+        <div><div class="section-title">Billing & Invoices</div><div class="section-desc">All invoices and outstanding balances</div></div>
+        <button class="btn btn-primary">+ New Invoice</button>
+      </div>
+
+      <div class="stats-grid" style="margin-bottom:16px">
+        <div class="stat-card green"><div class="stat-label">Paid Today</div><div class="stat-value green">₦217,300</div><div class="stat-meta">39 invoices cleared</div></div>
+        <div class="stat-card amber"><div class="stat-label">Partially Paid</div><div class="stat-value amber">₦28,500</div><div class="stat-meta">5 invoices partial</div></div>
+        <div class="stat-card red"><div class="stat-label">Outstanding</div><div class="stat-value red">₦38,700</div><div class="stat-meta">7 invoices unpaid</div></div>
+        <div class="stat-card purple"><div class="stat-label">Total Invoiced</div><div class="stat-value purple">₦284,500</div><div class="stat-meta">51 invoices today</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div style="display:flex;gap:10px">
+            <div class="search-bar" style="max-width:300px"><span class="search-icon">🔍</span><input type="text" placeholder="Search invoice…"></div>
+            <select style="width:150px"><option>All Statuses</option><option>Draft</option><option>Issued</option><option>Partial</option><option>Paid</option><option>Cancelled</option></select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <tr><th>Invoice #</th><th>Patient</th><th>Date</th><th>Total</th><th>Paid</th><th>Balance</th><th>Status</th><th>Actions</th></tr>
+            <tr>
+              <td class="mono text-teal" style="font-size:11.5px">INV-2026-00312</td>
+              <td><div class="patient-cell"><div class="avatar av-teal">AA</div><div><div class="patient-name">Adebayo Akinwale</div></div></div></td>
+              <td>19 Feb 2026</td><td>₦15,000</td><td>₦15,000</td><td>₦0</td>
+              <td><span class="badge badge-green">Paid</span></td>
+              <td><button class="btn btn-ghost btn-sm">View</button></td>
+            </tr>
+            <tr>
+              <td class="mono text-teal" style="font-size:11.5px">INV-2026-00313</td>
+              <td><div class="patient-cell"><div class="avatar av-green">FO</div><div><div class="patient-name">Fatima Okonkwo</div></div></div></td>
+              <td>19 Feb 2026</td><td>₦31,000</td><td>₦0</td><td>₦31,000</td>
+              <td><span class="badge badge-amber">Issued</span></td>
+              <td><button class="btn btn-primary btn-sm" onclick="openModal('modal-payment')">Pay</button></td>
+            </tr>
+            <tr>
+              <td class="mono text-teal" style="font-size:11.5px">INV-2026-00311</td>
+              <td><div class="patient-cell"><div class="avatar av-amber">IM</div><div><div class="patient-name">Ibrahim Musa</div></div></div></td>
+              <td>19 Feb 2026</td><td>₦42,500</td><td>₦20,000</td><td>₦22,500</td>
+              <td><span class="badge badge-amber">Partial</span></td>
+              <td><button class="btn btn-primary btn-sm" onclick="openModal('modal-payment')">Pay</button></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════ PAYMENTS ════════════════════ -->
+    <div class="page" id="page-payments">
+      <div class="section-header"><div class="section-title">Payment Collections</div><div class="section-desc">All payment transactions</div></div>
+
+      <div class="stats-grid">
+        <div class="stat-card green"><div class="stat-label">Cash</div><div class="stat-value green">₦185,000</div><div class="stat-meta">28 transactions</div></div>
+        <div class="stat-card teal"><div class="stat-label">Paystack</div><div class="stat-value teal">₦72,500</div><div class="stat-meta">11 transactions</div></div>
+        <div class="stat-card amber"><div class="stat-label">POS / Card</div><div class="stat-value amber">₦27,000</div><div class="stat-meta">4 transactions</div></div>
+        <div class="stat-card purple"><div class="stat-label">Flutterwave</div><div class="stat-value purple">₦0</div><div class="stat-meta">0 transactions</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Transaction Log</div>
+          <button class="btn btn-ghost btn-sm">📥 Export CSV</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <tr><th>Receipt #</th><th>Patient</th><th>Invoice</th><th>Amount</th><th>Method</th><th>Cashier</th><th>Time</th><th>Actions</th></tr>
+            <tr>
+              <td class="mono" style="font-size:11.5px">RCP-2026-00189</td>
+              <td>Adebayo Akinwale</td>
+              <td class="mono text-muted" style="font-size:11px">INV-2026-00312</td>
+              <td class="text-green" style="font-weight:700">₦15,000</td>
+              <td><span class="badge badge-green">Cash</span></td>
+              <td>Blessing O.</td>
+              <td style="color:var(--text-muted);font-size:12px">09:32 AM</td>
+              <td><button class="btn btn-ghost btn-sm">🖨️</button></td>
+            </tr>
+            <tr>
+              <td class="mono" style="font-size:11.5px">RCP-2026-00188</td>
+              <td>Chioma Uzoma</td>
+              <td class="mono text-muted" style="font-size:11px">INV-2026-00310</td>
+              <td class="text-green" style="font-weight:700">₦22,000</td>
+              <td><span class="badge badge-teal">Paystack</span></td>
+              <td>Blessing O.</td>
+              <td style="color:var(--text-muted);font-size:12px">11:18 AM</td>
+              <td><button class="btn btn-ghost btn-sm">🖨️</button></td>
+            </tr>
+            <tr>
+              <td class="mono" style="font-size:11.5px">RCP-2026-00187</td>
+              <td>Ibrahim Musa</td>
+              <td class="mono text-muted" style="font-size:11px">INV-2026-00311</td>
+              <td class="text-green" style="font-weight:700">₦20,000</td>
+              <td><span class="badge badge-amber">POS</span></td>
+              <td>Blessing O.</td>
+              <td style="color:var(--text-muted);font-size:12px">12:44 PM</td>
+              <td><button class="btn btn-ghost btn-sm">🖨️</button></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════ REPORTS ════════════════════ -->
+    <div class="page" id="page-reports">
+      <div class="section-header" style="display:flex;align-items:center;justify-content:space-between">
+        <div><div class="section-title">Reports & Analytics</div><div class="section-desc">Financial and operational reports</div></div>
+        <div style="display:flex;gap:10px">
+          <input type="date" value="2026-02-19" style="width:160px">
+          <input type="date" value="2026-02-19" style="width:160px">
+          <button class="btn btn-primary">Generate</button>
+          <button class="btn btn-ghost">📥 Export CSV</button>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Daily Revenue Summary</div><div class="badge badge-teal">Today</div></div>
+          <div class="summary-pair"><span class="key">Total Revenue</span><span class="val text-green">₦284,500</span></div>
+          <div class="summary-pair"><span class="key">Cash Payments</span><span class="val">₦185,000</span></div>
+          <div class="summary-pair"><span class="key">Paystack</span><span class="val">₦72,500</span></div>
+          <div class="summary-pair"><span class="key">POS/Card</span><span class="val">₦27,000</span></div>
+          <div class="summary-pair"><span class="key">Flutterwave</span><span class="val text-muted">₦0</span></div>
+          <div class="divider"></div>
+          <div class="summary-pair"><span class="key">Yesterday</span><span class="val text-secondary">₦253,700</span></div>
+          <div class="summary-pair"><span class="key">Change</span><span class="val text-green">↑ +₦30,800 (+12.1%)</span></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">Patient Census</div><div class="badge badge-green">Today</div></div>
+          <div class="summary-pair"><span class="key">New Registrations</span><span class="val text-teal">7</span></div>
+          <div class="summary-pair"><span class="key">Total Encounters</span><span class="val">38</span></div>
+          <div class="summary-pair"><span class="key">OPD Visits</span><span class="val">35</span></div>
+          <div class="summary-pair"><span class="key">A&E Visits</span><span class="val">3</span></div>
+          <div class="summary-pair"><span class="key">Currently In Queue</span><span class="val text-amber">8</span></div>
+          <div class="divider"></div>
+          <div class="summary-pair"><span class="key">Total Active Patients</span><span class="val">247</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">Outstanding Balances</div><div class="badge badge-red">12 Unpaid</div></div>
+        <div class="table-wrap">
+          <table>
+            <tr><th>Patient</th><th>Invoice</th><th>Invoice Date</th><th>Total</th><th>Paid</th><th>Outstanding</th><th>Days Old</th><th>Action</th></tr>
+            <tr><td>Ibrahim Musa</td><td class="mono text-muted" style="font-size:11px">INV-2026-00311</td><td>Today</td><td>₦42,500</td><td>₦20,000</td><td class="text-red" style="font-weight:700">₦22,500</td><td>0</td><td><button class="btn btn-primary btn-sm" onclick="openModal('modal-payment')">Pay Now</button></td></tr>
+            <tr><td>Fatima Okonkwo</td><td class="mono text-muted" style="font-size:11px">INV-2026-00313</td><td>Today</td><td>₦31,000</td><td>₦0</td><td class="text-red" style="font-weight:700">₦31,000</td><td>0</td><td><button class="btn btn-primary btn-sm" onclick="openModal('modal-payment')">Pay Now</button></td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════ USERS ════════════════════ -->
+    <div class="page" id="page-users">
+      <div class="section-header" style="display:flex;align-items:center;justify-content:space-between">
+        <div><div class="section-title">User Management</div><div class="section-desc">Staff accounts and role assignments</div></div>
+        <button class="btn btn-primary" onclick="openModal('modal-user')">+ Add User</button>
+      </div>
+
+      <div class="card">
+        <div class="table-wrap">
+          <table>
+            <tr><th>Staff Member</th><th>Email</th><th>Role</th><th>Department</th><th>Last Login</th><th>Status</th><th>Actions</th></tr>
+            <tr>
+              <td><div class="patient-cell"><div class="avatar" style="background:linear-gradient(135deg,#8b5cf6,#0ea5e9)">SA</div><div><div class="patient-name">Dr. Sarah Adeyemi</div></div></div></td>
+              <td style="color:var(--text-secondary)"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="1c6f327d7879657971755c74736f6c75687d7032727b">[email&#160;protected]</a></td>
+              <td><span class="badge badge-purple">System Admin</span></td>
+              <td>Obstetrics</td><td style="font-size:12px;color:var(--text-muted)">Just now</td>
+              <td><span class="badge badge-green">Active</span></td>
+              <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+            </tr>
+            <tr>
+              <td><div class="patient-cell"><div class="avatar av-teal">CE</div><div><div class="patient-name">Dr. Chidi Eze</div></div></div></td>
+              <td style="color:var(--text-secondary)"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="15763b706f70557d7a66657c6174793b7b72">[email&#160;protected]</a></td>
+              <td><span class="badge badge-teal">Doctor</span></td>
+              <td>General Practice</td><td style="font-size:12px;color:var(--text-muted)">8:45 AM</td>
+              <td><span class="badge badge-green">Active</span></td>
+              <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+            </tr>
+            <tr>
+              <td><div class="patient-cell"><div class="avatar av-green">AN</div><div><div class="patient-name">Nurse Aisha Nwosu</div></div></div></td>
+              <td style="color:var(--text-secondary)"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="ed8cc3839a829e98ad85829e9d84998c81c3838a">[email&#160;protected]</a></td>
+              <td><span class="badge badge-green">Nurse</span></td>
+              <td>General Practice</td><td style="font-size:12px;color:var(--text-muted)">9:02 AM</td>
+              <td><span class="badge badge-green">Active</span></td>
+              <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+            </tr>
+            <tr>
+              <td><div class="patient-cell"><div class="avatar av-amber">BO</div><div><div class="patient-name">Blessing Okonkwo</div></div></div></td>
+              <td style="color:var(--text-secondary)"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="5f3d71303430313428301f37302c2f362b3e33713138">[email&#160;protected]</a></td>
+              <td><span class="badge badge-amber">Billing Officer</span></td>
+              <td>Finance</td><td style="font-size:12px;color:var(--text-muted)">8:30 AM</td>
+              <td><span class="badge badge-green">Active</span></td>
+              <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════ SETTINGS ════════════════════ -->
+    <div class="page" id="page-settings">
+      <div class="section-header"><div class="section-title">Hospital Settings</div><div class="section-desc">Facility configuration and service price list</div></div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title" style="margin-bottom:16px">🏥 Hospital Profile</div>
+          <div class="form-group"><label>Hospital Name</label><input type="text" value="Lagos Metropolitan Medical Services"></div>
+          <div class="form-group"><label>Address</label><textarea rows="2">123 Broad Street, Lagos Island, Lagos State, Nigeria</textarea></div>
+          <div class="form-row">
+            <div class="form-group"><label>Phone</label><input type="tel" value="+234 801 234 5678"></div>
+            <div class="form-group"><label>Email</label><input type="email" value="admin@lagosmetmed.ng"></div>
+          </div>
+          <div class="form-group"><label>Hospital Logo</label>
+            <div style="border:2px dashed var(--border-light);border-radius:8px;padding:24px;text-align:center;color:var(--text-muted);cursor:pointer">
+              📁 Click to upload logo (PNG, max 2MB)
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="showToast('Hospital settings saved', 'success')">Save Changes</button>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">🏷️ Service Price List</div><button class="btn btn-ghost btn-sm">+ Add Service</button></div>
+          <div class="table-wrap">
+            <table>
+              <tr><th>Service</th><th>Category</th><th>Price</th><th>Status</th></tr>
+              <tr><td>Consultation (OPD)</td><td style="color:var(--text-muted)">Consultation</td><td class="text-green" style="font-weight:600">₦5,000</td><td><span class="badge badge-green">Active</span></td></tr>
+              <tr><td>Pelvic Ultrasound</td><td style="color:var(--text-muted)">Procedure</td><td class="text-green" style="font-weight:600">₦18,000</td><td><span class="badge badge-green">Active</span></td></tr>
+              <tr><td>FBC</td><td style="color:var(--text-muted)">Laboratory</td><td class="text-green" style="font-weight:600">₦4,500</td><td><span class="badge badge-green">Active</span></td></tr>
+              <tr><td>CRP</td><td style="color:var(--text-muted)">Laboratory</td><td class="text-green" style="font-weight:600">₦3,500</td><td><span class="badge badge-green">Active</span></td></tr>
+              <tr><td>ECG</td><td style="color:var(--text-muted)">Procedure</td><td class="text-green" style="font-weight:600">₦8,000</td><td><span class="badge badge-green">Active</span></td></tr>
+              <tr><td>Urine Pregnancy Test</td><td style="color:var(--text-muted)">Laboratory</td><td class="text-green" style="font-weight:600">₦2,000</td><td><span class="badge badge-green">Active</span></td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom:16px">🏢 Departments</div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px">
+          <div class="tag" style="font-size:13px;padding:8px 12px">🏥 General Practice <span class="remove" style="margin-left:4px">×</span></div>
+          <div class="tag" style="font-size:13px;padding:8px 12px">👶 Paediatrics <span class="remove" style="margin-left:4px">×</span></div>
+          <div class="tag" style="font-size:13px;padding:8px 12px">🤰 Obstetrics & Gynaecology <span class="remove" style="margin-left:4px">×</span></div>
+          <div class="tag" style="font-size:13px;padding:8px 12px">🚨 Accident & Emergency <span class="remove" style="margin-left:4px">×</span></div>
+          <div class="tag" style="font-size:13px;padding:8px 12px">💊 Cardiology <span class="remove" style="margin-left:4px">×</span></div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="text" placeholder="New department…" style="width:200px">
+            <button class="btn btn-ghost btn-sm">+ Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ══════════════════════ MODALS ══════════════════════ -->
+
+<!-- REGISTER PATIENT MODAL -->
+<div class="modal-overlay" id="modal-register">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <span class="modal-title">Register New Patient</span>
+      <button class="modal-close" onclick="closeModal('modal-register')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="steps">
+        <div class="step active" id="step-1"><div class="step-num">1</div>Demographics</div>
+        <div class="step-divider"></div>
+        <div class="step" id="step-2"><div class="step-num">2</div>Contact</div>
+        <div class="step-divider"></div>
+        <div class="step" id="step-3"><div class="step-num">3</div>Next of Kin</div>
+      </div>
+
+      <div id="reg-step-1">
+        <div class="form-row">
+          <div class="form-group"><label>First Name *</label><input type="text" placeholder="Enter first name"></div>
+          <div class="form-group"><label>Last Name *</label><input type="text" placeholder="Enter last name"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Date of Birth *</label><input type="date"></div>
+          <div class="form-group"><label>Gender *</label>
+            <select><option value="">Select…</option><option>Male</option><option>Female</option></select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Patient Photo</label>
+          <div style="border:2px dashed var(--border-light);border-radius:8px;padding:16px;text-align:center;color:var(--text-muted);cursor:pointer;font-size:13px">
+            📷 Click to upload photo (optional)
+          </div>
+        </div>
+        <div style="background:var(--bg-dark);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:12.5px;color:var(--text-secondary)">
+          ℹ️ The system will automatically check for potential duplicates based on name and date of birth.
+        </div>
+      </div>
+
+      <div id="reg-step-2" style="display:none">
+        <div class="form-row">
+          <div class="form-group"><label>Primary Phone *</label><input type="tel" placeholder="0801 234 5678"></div>
+          <div class="form-group"><label>Secondary Phone</label><input type="tel" placeholder="0802 345 6789 (optional)"></div>
+        </div>
+        <div class="form-group"><label>Email Address</label><input type="email" placeholder="patient@email.com (optional)"></div>
+        <div class="form-row">
+          <div class="form-group"><label>State</label>
+            <select><option>Lagos</option><option>Abuja FCT</option><option>Ogun</option><option>Oyo</option><option>Rivers</option><option>Kano</option></select>
+          </div>
+          <div class="form-group"><label>LGA</label><input type="text" placeholder="Local Government Area"></div>
+        </div>
+        <div class="form-group"><label>Full Address</label><textarea rows="2" placeholder="Street address…"></textarea></div>
+      </div>
+
+      <div id="reg-step-3" style="display:none">
+        <div class="form-row">
+          <div class="form-group"><label>Next of Kin Name *</label><input type="text" placeholder="Full name"></div>
+          <div class="form-group"><label>Phone Number *</label><input type="tel" placeholder="0803 456 7890"></div>
+        </div>
+        <div class="form-group"><label>Relationship</label>
+          <select><option>Spouse</option><option>Parent</option><option>Sibling</option><option>Child</option><option>Friend</option><option>Other</option></select>
+        </div>
+        <div style="background:var(--accent-teal-dim);border:1px solid rgba(14,165,233,0.3);border-radius:8px;padding:14px;font-size:13px;color:var(--accent-teal)">
+          ✓ MRN will be auto-generated: <strong class="mono">6030-LGMS-000248</strong>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="reg-prev" style="display:none" onclick="regStep(-1)">← Back</button>
+      <button class="btn btn-ghost" onclick="closeModal('modal-register')">Cancel</button>
+      <button class="btn btn-primary" id="reg-next" onclick="regStep(1)">Continue →</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHECK-IN MODAL -->
+<div class="modal-overlay" id="modal-checkin">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <span class="modal-title">Check-In Patient</span>
+      <button class="modal-close" onclick="closeModal('modal-checkin')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label>Search Patient</label>
+        <div class="search-bar" style="max-width:100%"><span class="search-icon">🔍</span><input type="text" placeholder="Name, MRN, or phone…"></div>
+      </div>
+      <div class="form-group"><label>Department *</label>
+        <select><option>General Practice</option><option>Paediatrics</option><option>Obstetrics</option><option>A&E</option></select>
+      </div>
+      <div style="background:var(--bg-dark);border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;align-items:center;gap:12px">
+        <div class="avatar av-teal">AA</div>
+        <div><div style="font-size:13px;font-weight:600">Adebayo Akinwale</div><div class="patient-mrn">6030-LGMS-000047 · 34M</div></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-checkin')">Cancel</button>
+      <button class="btn btn-primary" onclick="checkinPatient()">✓ Check In to Queue</button>
+    </div>
+  </div>
+</div>
+
+<!-- VITALS MODAL -->
+<div class="modal-overlay" id="modal-vitals">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Record Vitals — Fatima Okonkwo</span>
+      <button class="modal-close" onclick="closeModal('modal-vitals')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>Blood Pressure (Systolic)</label><div class="input-group"><span class="input-addon">↑</span><input type="number" placeholder="120" value="122"></div></div>
+        <div class="form-group"><label>Blood Pressure (Diastolic)</label><div class="input-group"><span class="input-addon">↓</span><input type="number" placeholder="80" value="78"></div></div>
+      </div>
+      <div class="form-row-3">
+        <div class="form-group"><label>Temperature (°C)</label><input type="number" placeholder="36.5" value="37.8" step="0.1"></div>
+        <div class="form-group"><label>Pulse Rate (bpm)</label><input type="number" placeholder="72" value="96"></div>
+        <div class="form-group"><label>SpO2 (%)</label><input type="number" placeholder="98" value="98"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Weight (kg)</label><input type="number" placeholder="70" value="63" step="0.1"></div>
+        <div class="form-group"><label>Height (cm)</label><input type="number" placeholder="170" value="162"></div>
+      </div>
+      <div class="form-group"><label>Respiratory Rate (breaths/min)</label><input type="number" placeholder="16" value="18"></div>
+      <div style="background:var(--accent-teal-dim);border:1px solid rgba(14,165,233,0.2);border-radius:8px;padding:12px;font-size:13px;color:var(--accent-teal)">
+        📊 Calculated BMI: <strong>24.0 kg/m²</strong> — Healthy Range
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-vitals')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveVitals()">Save Vitals</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div class="modal-overlay" id="modal-payment">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Collect Payment</span>
+      <button class="modal-close" onclick="closeModal('modal-payment')">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:var(--bg-dark);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:20px">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
+          <span class="text-muted">Patient</span><span style="font-weight:600">Fatima Okonkwo</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
+          <span class="text-muted">Invoice</span><span class="mono text-teal">INV-2026-00313</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:800;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
+          <span>Amount Due</span><span class="text-green">₦31,000</span>
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px"><label>Select Payment Method</label></div>
+      <div class="pay-method-grid">
+        <div class="pay-method-card selected" onclick="selectPayMethod(this)">
+          <div class="pm-icon">💵</div>
+          <div class="pm-name">Cash</div>
+          <div class="pm-desc">Record manual cash</div>
+        </div>
+        <div class="pay-method-card" onclick="selectPayMethod(this)">
+          <div class="pm-icon">💳</div>
+          <div class="pm-name">POS / Card</div>
+          <div class="pm-desc">Enter POS reference</div>
+        </div>
+        <div class="pay-method-card" onclick="selectPayMethod(this)">
+          <div class="pm-icon">🌐</div>
+          <div class="pm-name">Paystack</div>
+          <div class="pm-desc">Card, bank transfer, USSD</div>
+        </div>
+        <div class="pay-method-card" onclick="selectPayMethod(this)">
+          <div class="pm-icon">🦋</div>
+          <div class="pm-name">Flutterwave</div>
+          <div class="pm-desc">Card, mobile money</div>
+        </div>
+      </div>
+
+      <div class="form-group"><label>Amount Paid (₦)</label><input type="number" value="31000" id="pay-amount" placeholder="31000"></div>
+      <div class="form-group"><label>Notes (optional)</label><input type="text" placeholder="e.g. POS reference, transaction ID…"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-payment')">Cancel</button>
+      <button class="btn btn-success" onclick="processPayment()">✓ Confirm Payment</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD USER MODAL -->
+<div class="modal-overlay" id="modal-user">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Add Staff User</span>
+      <button class="modal-close" onclick="closeModal('modal-user')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label>First Name *</label><input type="text" placeholder="First name"></div>
+        <div class="form-group"><label>Last Name *</label><input type="text" placeholder="Last name"></div>
+      </div>
+      <div class="form-group"><label>Email Address *</label><input type="email" placeholder="staff@hospital.ng"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Role *</label>
+          <select><option>Doctor</option><option>Nurse</option><option>Receptionist</option><option>Billing Officer</option><option>Hospital Admin</option><option>System Admin</option></select>
+        </div>
+        <div class="form-group"><label>Department</label>
+          <select><option>General Practice</option><option>Paediatrics</option><option>Obstetrics</option><option>A&E</option><option>Finance</option></select>
+        </div>
+      </div>
+      <div class="form-group"><label>Temporary Password *</label><input type="password" placeholder="Min 8 chars, mixed case + number"></div>
+      <div style="background:var(--bg-dark);border:1px solid var(--border);border-radius:8px;padding:12px;font-size:12px;color:var(--text-muted)">
+        🔐 User will be required to change password on first login.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-user')">Cancel</button>
+      <button class="btn btn-primary" onclick="createUser()">Create User</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toast-container"></div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  // ── PAGE NAVIGATION ──
+  const pageNames = {
+    dashboard: 'Dashboard',
+    patients: 'Patient Registry',
+    queue: 'OPD Queue',
+    consultation: 'Consultation',
+    billing: 'Billing & Invoices',
+    payments: 'Payment Collections',
+    reports: 'Reports & Analytics',
+    users: 'User Management',
+    settings: 'Settings'
+  };
+
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n => {
+      if (n.getAttribute('onclick') && n.getAttribute('onclick').includes("'" + id + "'")) n.classList.add('active');
+    });
+    document.getElementById('page-title').textContent = pageNames[id] || id;
+  }
+
+  // ── TABS ──
+  function showTab(tabId, el) {
+    const parent = el.closest('.page') || document.body;
+    parent.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    parent.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById(tabId).classList.add('active');
+  }
+
+  // ── MODALS ──
+  function openModal(id) {
+    document.getElementById(id).classList.add('open');
+  }
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+    regCurrentStep = 1; updateRegStep();
+  }
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', function(e) {
+      if (e.target === this) this.classList.remove('open');
+    });
+  });
+
+  // ── REGISTRATION STEPS ──
+  let regCurrentStep = 1;
+  const regSteps = 3;
+
+  function regStep(dir) {
+    regCurrentStep = Math.max(1, Math.min(regSteps, regCurrentStep + dir));
+    updateRegStep();
+    if (regCurrentStep === regSteps && dir === 1) {
+      document.getElementById('reg-next').textContent = '✓ Register Patient';
+      document.getElementById('reg-next').onclick = registerPatient;
+    } else if (dir === 1 && regCurrentStep < regSteps) {
+      document.getElementById('reg-next').textContent = 'Continue →';
+      document.getElementById('reg-next').onclick = () => regStep(1);
+    }
+  }
+
+  function updateRegStep() {
+    for (let i = 1; i <= regSteps; i++) {
+      const stepEl = document.getElementById('step-' + i);
+      const paneEl = document.getElementById('reg-step-' + i);
+      if (stepEl) {
+        stepEl.classList.toggle('active', i === regCurrentStep);
+        stepEl.classList.toggle('done', i < regCurrentStep);
+      }
+      if (paneEl) paneEl.style.display = i === regCurrentStep ? 'block' : 'none';
+    }
+    const prevBtn = document.getElementById('reg-prev');
+    if (prevBtn) prevBtn.style.display = regCurrentStep > 1 ? 'inline-flex' : 'none';
+  }
+
+  function registerPatient() {
+    closeModal('modal-register');
+    showToast('Patient registered! MRN: 6030-LGMS-000248', 'success');
+  }
+
+  // ── PATIENTS DATA & TABLE ──
+  const patientData = [
+    { init:'AA', cls:'av-teal', name:'Adebayo Akinwale', mrn:'6030-LGMS-000047', age:'34M', phone:'0802-345-6789', last:'19 Feb 2026', balance:'₦0', bstatus:'paid' },
+    { init:'FO', cls:'av-green', name:'Fatima Okonkwo', mrn:'6030-LGMS-000103', age:'28F', phone:'0803-456-7890', last:'19 Feb 2026', balance:'₦31,000', bstatus:'unpaid' },
+    { init:'CU', cls:'av-purple', name:'Chioma Uzoma', mrn:'6030-LGMS-000092', age:'42F', phone:'0704-567-8901', last:'19 Feb 2026', balance:'₦0', bstatus:'paid' },
+    { init:'IM', cls:'av-amber', name:'Ibrahim Musa', mrn:'6030-LGMS-000250', age:'55M', phone:'0901-678-9012', last:'19 Feb 2026', balance:'₦22,500', bstatus:'partial' },
+    { init:'EO', cls:'av-red', name:'Emeka Okafor', mrn:'6030-LGMS-000033', age:'29M', phone:'0812-789-0123', last:'17 Feb 2026', balance:'₦0', bstatus:'paid' },
+    { init:'NO', cls:'av-teal', name:'Ngozi Obi', mrn:'6030-LGMS-000181', age:'36F', phone:'0705-890-1234', last:'15 Feb 2026', balance:'₦0', bstatus:'paid' },
+    { init:'TL', cls:'av-green', name:'Taiwo Lawal', mrn:'6030-LGMS-000066', age:'47M', phone:'0813-901-2345', last:'12 Feb 2026', balance:'₦8,000', bstatus:'unpaid' },
+  ];
+
+  function renderPatients(data) {
+    const tbody = document.getElementById('patients-tbody');
+    tbody.innerHTML = data.map(p => `
+      <tr>
+        <td><div class="patient-cell"><div class="avatar ${p.cls}">${p.init}</div><div><div class="patient-name">${p.name}</div></div></div></td>
+        <td><span class="mono text-muted" style="font-size:11.5px">${p.mrn}</span></td>
+        <td>${p.age}</td>
+        <td style="color:var(--text-secondary)">${p.phone}</td>
+        <td style="color:var(--text-muted);font-size:12px">${p.last}</td>
+        <td><span class="badge ${p.bstatus === 'paid' ? 'badge-green' : p.bstatus === 'partial' ? 'badge-amber' : 'badge-red'}">${p.balance === '₦0' ? 'Settled' : p.balance}</span></td>
+        <td style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="viewPatient()">View</button>
+          <button class="btn btn-ghost btn-sm" onclick="openModal('modal-checkin')">Check-In</button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function filterPatients(val) {
+    const filtered = patientData.filter(p =>
+      p.name.toLowerCase().includes(val.toLowerCase()) ||
+      p.mrn.toLowerCase().includes(val.toLowerCase()) ||
+      p.phone.includes(val)
+    );
+    renderPatients(filtered);
+  }
+
+  function viewPatient() { showPage('consultation'); }
+
+  renderPatients(patientData);
+
+  // ── QUEUE DATA ──
+  const queueData = [
+    { pos:1, init:'OA', cls:'av-teal', name:'Obiageli Amos', mrn:'6030-LGMS-000211', dept:'General Practice', time:'08:52 AM', status:'In Consultation', dr:'Dr. Eze' },
+    { pos:2, init:'KB', cls:'av-green', name:'Kayode Bello', mrn:'6030-LGMS-000178', dept:'General Practice', time:'09:05 AM', status:'Waiting', dr:'' },
+    { pos:3, init:'SK', cls:'av-purple', name:'Sola Kehinde', mrn:'6030-LGMS-000094', dept:'Paediatrics', time:'09:18 AM', status:'In Consultation', dr:'Dr. Balogun' },
+    { pos:4, init:'RA', cls:'av-amber', name:'Remi Adewale', mrn:'6030-LGMS-000137', dept:'General Practice', time:'09:34 AM', status:'Waiting', dr:'' },
+    { pos:5, init:'MH', cls:'av-red', name:'Mohammed Hassan', mrn:'6030-LGMS-000062', dept:'A&E', time:'10:02 AM', status:'Waiting', dr:'' },
+    { pos:6, init:'BD', cls:'av-teal', name:'Biola Dada', mrn:'6030-LGMS-000199', dept:'Paediatrics', time:'10:15 AM', status:'Waiting', dr:'' },
+    { pos:7, init:'PN', cls:'av-green', name:'Patience Nkemdirim', mrn:'6030-LGMS-000245', dept:'General Practice', time:'10:28 AM', status:'Waiting', dr:'' },
+    { pos:8, init:'YI', cls:'av-amber', name:'Yusuf Ibrahim', mrn:'6030-LGMS-000033', dept:'A&E', time:'10:44 AM', status:'Waiting', dr:'' },
+  ];
+
+  function renderQueue() {
+    const list = document.getElementById('queue-list');
+    list.innerHTML = queueData.map(q => `
+      <div class="queue-item">
+        <div class="queue-pos ${q.status === 'In Consultation' ? 'calling' : ''}">${q.pos}</div>
+        <div class="avatar ${q.cls}">${q.init}</div>
+        <div class="queue-info">
+          <div class="queue-name">${q.name}</div>
+          <div class="queue-meta">${q.mrn} · ${q.dept} ${q.dr ? '· ' + q.dr : ''}</div>
+        </div>
+        <div style="text-align:right">
+          <span class="badge ${q.status === 'In Consultation' ? 'badge-teal' : 'badge-amber'}">${q.status}</span>
+          <div class="queue-time" style="margin-top:4px">Since ${q.time}</div>
+        </div>
+        ${q.status === 'Waiting' ? `<button class="btn btn-ghost btn-sm" onclick="callPatient(${q.pos})">Call →</button>` : `<button class="btn btn-ghost btn-sm" onclick="viewPatient()">Open</button>`}
+      </div>
+    `).join('');
+  }
+
+  renderQueue();
+
+  function callPatient(pos) {
+    queueData.find(q => q.pos === pos).status = 'In Consultation';
+    renderQueue();
+    showToast('Patient called to consultation room', 'info');
+    setTimeout(() => showPage('consultation'), 800);
+  }
+
+  // ── ICD-10 SEARCH ──
+  const icdData = [
+    { code:'O00.9', desc:'Ectopic pregnancy, unspecified' },
+    { code:'O03.9', desc:'Spontaneous abortion, unspecified' },
+    { code:'O20.0', desc:'Threatened abortion' },
+    { code:'N73.0', desc:'Acute parametritis and pelvic cellulitis' },
+    { code:'N70.0', desc:'Acute salpingitis and oophoritis' },
+    { code:'J06.9', desc:'Acute upper respiratory infection, unspecified' },
+    { code:'I10', desc:'Essential (primary) hypertension' },
+    { code:'E11.9', desc:'Type 2 diabetes mellitus without complications' },
+    { code:'K35.9', desc:'Acute appendicitis, unspecified' },
+    { code:'Z34.0', desc:'Supervision of normal first pregnancy' },
+    { code:'A09', desc:'Other and unspecified gastroenteritis and colitis' },
+    { code:'M54.5', desc:'Low back pain' },
+  ];
+
+  function searchICD(val) {
+    const results = document.getElementById('icd-results');
+    if (!val || val.length < 2) { results.innerHTML = ''; return; }
+    const matches = icdData.filter(d =>
+      d.code.toLowerCase().includes(val.toLowerCase()) ||
+      d.desc.toLowerCase().includes(val.toLowerCase())
+    ).slice(0, 6);
+    results.innerHTML = matches.map(d => `
+      <div class="icd-item" onclick="addICD('${d.code}', '${d.desc.replace(/'/g,'&#39;')}')">
+        <span class="icd-code">${d.code}</span>
+        <span class="icd-desc">${d.desc}</span>
+      </div>
+    `).join('');
+  }
+
+  function addICD(code, desc) {
+    const container = document.getElementById('icd-selected');
+    const tag = document.createElement('div');
+    tag.className = 'tag';
+    tag.innerHTML = `<span class="icd-code" style="font-size:10px">${code}</span> ${desc} <span class="remove" onclick="this.parentElement.remove()">×</span>`;
+    container.appendChild(tag);
+    document.getElementById('icd-results').innerHTML = '';
+    showToast('Diagnosis added: ' + code, 'info');
+  }
+
+  // ── GLOBAL SEARCH ──
+  function globalSearch(val) {
+    if (val.length > 2) {
+      // Visual feedback only — would trigger real patient search
+    }
+  }
+
+  // ── PAYMENT ──
+  function selectPayMethod(el) {
+    el.closest('.pay-method-grid').querySelectorAll('.pay-method-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  function processPayment() {
+    closeModal('modal-payment');
+    showToast('Payment of ₦31,000 recorded. Receipt RCP-2026-00190 generated.', 'success');
+  }
+
+  // ── CHECKIN ──
+  function checkinPatient() {
+    closeModal('modal-checkin');
+    showToast('Adebayo Akinwale checked in to General Practice queue', 'success');
+  }
+
+  // ── VITALS ──
+  function saveVitals() {
+    closeModal('modal-vitals');
+    showToast('Vitals recorded for Fatima Okonkwo', 'success');
+  }
+
+  // ── ENCOUNTER CLOSE ──
+  function closeEncounter() {
+    showToast('Encounter completed. Invoice INV-2026-00313 generated.', 'success');
+    setTimeout(() => showPage('billing'), 1000);
+  }
+
+  // ── USER CREATE ──
+  function createUser() {
+    closeModal('modal-user');
+    showToast('Staff account created. Welcome email sent.', 'success');
+  }
+
+  // ── TOAST ──
+  function showToast(msg, type = 'info') {
+    const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `<span class="toast-icon">${icons[type]}</span><span class="toast-msg">${msg}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => toast.remove(), 4000);
+  }
+
+  // ── ESC to close modals ──
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+    }
+  });
+
+  // ══════════════════════════════════════
+  //  AUTH LOGIC
+  // ══════════════════════════════════════
+
+  // Known demo accounts
+  const demoAccounts = {
+    's.adeyemi@hospital.ng': { name:'Dr. Sarah Adeyemi', role:'System Admin', initials:'SA', color:'linear-gradient(135deg,#8b5cf6,#0ea5e9)' },
+    'c.eze@hospital.ng':     { name:'Dr. Chidi Eze',     role:'Doctor',       initials:'CE', color:'linear-gradient(135deg,#0ea5e9,#38bdf8)' },
+    'a.nwosu@hospital.ng':   { name:'Nurse Aisha Nwosu', role:'Nurse',        initials:'AN', color:'linear-gradient(135deg,#10b981,#34d399)' },
+    'b.okonkwo@hospital.ng': { name:'Blessing Okonkwo',  role:'Billing Officer', initials:'BO', color:'linear-gradient(135deg,#f59e0b,#fbbf24)' },
+  };
+
+  let currentUser = null;
+  let regHospCurrentStep = 1;
+
+  // Show an auth view
+  function showView(id) {
+    document.querySelectorAll('.auth-view').forEach(v => v.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    // Re-animate
+    const wrap = document.getElementById('auth-form-wrap');
+    wrap.style.animation = 'none';
+    requestAnimationFrame(() => { wrap.style.animation = ''; });
+    // Hide back-to-login on confirmation step
+    const backLink = document.getElementById('back-to-login-link');
+    if (backLink) backLink.style.display = (id === 'view-register-hospital' && regHospCurrentStep === 3) ? 'none' : '';
+  }
+
+  // Demo role quick-select
+  function demoRole(el, email, role) {
+    document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    document.getElementById('login-email').value = email;
+    document.getElementById('login-password').value = 'Demo1234';
+  }
+
+  // Toggle password visibility
+  function togglePwd(inputId, toggleEl) {
+    const input = document.getElementById(inputId);
+    if (input.type === 'password') {
+      input.type = 'text';
+      toggleEl.textContent = '🙈';
+    } else {
+      input.type = 'password';
+      toggleEl.textContent = '👁️';
+    }
+  }
+
+  // Password strength checker
+  function checkStrength(val) {
+    const segs = [document.getElementById('seg1'), document.getElementById('seg2'),
+                  document.getElementById('seg3'), document.getElementById('seg4')];
+    const label = document.getElementById('strength-label');
+    let score = 0;
+    if (val.length >= 8) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+
+    const colors = ['#ef4444','#f59e0b','#0ea5e9','#10b981'];
+    const labels = ['Too short','Weak','Good','Strong'];
+    segs.forEach((s, i) => { s.style.background = i < score ? colors[score - 1] : 'var(--border)'; });
+    label.textContent = val.length === 0 ? 'Enter a password' : labels[Math.max(0, score-1)];
+    label.style.color = val.length === 0 ? 'var(--text-muted)' : colors[Math.max(0, score-1)];
+  }
+
+  // LOGIN
+  function doLogin() {
+    const email = document.getElementById('login-email').value.trim().toLowerCase();
+    const password = document.getElementById('login-password').value;
+    const btn = document.getElementById('login-btn');
+    const errorEl = document.getElementById('login-error');
+
+    errorEl.classList.remove('show');
+    btn.disabled = true;
+    btn.classList.add('auth-btn-loading');
+    btn.textContent = '';
+
+    setTimeout(() => {
+      btn.disabled = false;
+      btn.classList.remove('auth-btn-loading');
+      btn.textContent = 'Sign In';
+
+      // Validate: known accounts need Demo1234, unknown email needs any valid-looking password
+      const known = demoAccounts[email];
+      const validPassword = password.length >= 8;
+
+      if (!email || !validPassword) {
+        document.getElementById('login-error-msg').textContent = 'Please enter a valid email and password (min 8 characters).';
+        errorEl.classList.add('show');
+        return;
+      }
+
+      if (known) {
+        currentUser = known;
+      } else {
+        // Accept any email with a valid password as a generic user for demo
+        currentUser = {
+          name: email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+          role: 'Hospital Admin',
+          initials: email.substring(0,2).toUpperCase(),
+          color: 'linear-gradient(135deg,#8b5cf6,#0ea5e9)'
+        };
+      }
+
+      enterApp();
+    }, 1200);
+  }
+
+  // FORGOT PASSWORD
+  function doForgot() {
+    showView('view-forgot-sent');
+  }
+
+  // HOSPITAL REGISTRATION steps
+  function regHospStep(step) {
+    if (step === 2) {
+      const name = document.getElementById('h-name').value.trim();
+      if (!name) { alert('Please enter your hospital name.'); return; }
+    }
+    if (step === 3) {
+      const terms = document.getElementById('accept-terms').checked;
+      if (!terms) { alert('Please accept the Terms of Service to continue.'); return; }
+      // Populate confirmation
+      const hospName = document.getElementById('h-name').value || 'Your Hospital';
+      const adminEmail = document.getElementById('h-admin-email').value || '—';
+      document.getElementById('confirm-hosp-name').textContent = hospName;
+      document.getElementById('confirm-admin-email').textContent = adminEmail;
+      document.getElementById('back-to-login-link').style.display = 'none';
+    }
+
+    regHospCurrentStep = step;
+
+    // Update step indicators
+    for (let i = 1; i <= 3; i++) {
+      const el = document.getElementById('rs' + i);
+      if (!el) continue;
+      const numEl = el.querySelector('div');
+      if (i < step) {
+        el.style.color = 'var(--accent-green)';
+        numEl.style.background = 'var(--accent-green)';
+        numEl.style.color = 'white';
+        numEl.textContent = '✓';
+      } else if (i === step) {
+        el.style.color = 'var(--accent-teal)';
+        numEl.style.background = 'var(--accent-teal)';
+        numEl.style.color = 'white';
+        numEl.textContent = i;
+      } else {
+        el.style.color = 'var(--text-muted)';
+        numEl.style.background = 'var(--bg-hover)';
+        numEl.style.color = 'var(--text-muted)';
+        numEl.textContent = i;
+      }
+    }
+
+    for (let i = 1; i <= 3; i++) {
+      document.getElementById('reg-h-step' + i).style.display = i === step ? 'block' : 'none';
+    }
+  }
+
+  // After hospital registration, go to dashboard
+  function proceedToDashboard() {
+    const adminName = document.getElementById('h-admin-name').value || 'Admin';
+    const adminEmail = document.getElementById('h-admin-email').value || 'admin@hospital.ng';
+    currentUser = {
+      name: adminName,
+      role: 'System Admin',
+      initials: adminName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase(),
+      color: 'linear-gradient(135deg,#8b5cf6,#0ea5e9)'
+    };
+    enterApp();
+  }
+
+  // Enter the app
+  function enterApp() {
+    // Update dashboard greeting
+    const greetEl = document.querySelector('#page-dashboard .section-title');
+    const firstName = currentUser.name.split(' ').find(w => !['Dr.','Mr.','Mrs.','Ms.','Prof.'].includes(w)) || currentUser.name;
+    if (greetEl) greetEl.textContent = `Good morning, ${firstName} 👋`;
+
+    // Always land on dashboard regardless of previous screen
+    showPage('dashboard');
+
+    // Show app, hide auth
+    document.getElementById('auth-root').style.display = 'none';
+    const appRoot = document.getElementById('app-root');
+    appRoot.classList.add('visible');
+    appRoot.style.animation = 'fadeSlide 0.35s ease';
+
+    // Auto-logout timer (30 min inactivity)
+    resetInactivityTimer();
+    document.addEventListener('mousemove', resetInactivityTimer);
+    document.addEventListener('keypress', resetInactivityTimer);
+
+    showToast(`Welcome, ${currentUser.name}!`, 'success');
+  }
+
+  // Logout
+  function logout() {
+    document.getElementById('app-root').classList.remove('visible');
+    document.getElementById('auth-root').style.display = 'flex';
+    showView('view-login');
+    currentUser = null;
+    showToast('You have been signed out.', 'info');
+  }
+
+  // Auto-logout after 30min inactivity
+  let inactivityTimer;
+  function resetInactivityTimer() {
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(() => {
+      logout();
+      showToast('Session expired after 30 minutes of inactivity.', 'info');
+    }, 30 * 60 * 1000);
+  }
+
+  // Enter on login form
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('login-password').addEventListener('keydown', e => {
+      if (e.key === 'Enter') doLogin();
+    });
+  });
+
+</script>
+
+</div><!-- /.app-root -->
+</body>
+</html>
