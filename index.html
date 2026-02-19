@@ -1220,7 +1220,7 @@
 
         <div class="check-row">
           <input type="checkbox" id="remember-me" checked>
-          <span>Remember me for 7 days</span>
+          <span>Remember me on this device</span>
         </div>
 
         <button class="auth-btn" id="login-btn" onclick="doLogin()">Sign In</button>
@@ -2885,6 +2885,7 @@ Mother: No significant illness</textarea>
   function doLogin() {
     const email = document.getElementById('login-email').value.trim().toLowerCase();
     const password = document.getElementById('login-password').value;
+    const rememberMe = document.getElementById('remember-me').checked;
     const btn = document.getElementById('login-btn');
     const errorEl = document.getElementById('login-error');
 
@@ -2918,6 +2919,19 @@ Mother: No significant illness</textarea>
           initials: email.substring(0,2).toUpperCase(),
           color: 'linear-gradient(135deg,#8b5cf6,#0ea5e9)'
         };
+      }
+
+      // Remember me checked → keyed to email in localStorage (persists across browser sessions)
+      // Unchecked → sessionStorage only (cleared when tab/browser closes)
+      const storageKey = '6030h_session_' + email;
+      if (rememberMe) {
+        localStorage.setItem(storageKey, JSON.stringify({ ...currentUser, email }));
+        localStorage.setItem('6030h_active_key', storageKey);
+        sessionStorage.removeItem('6030h_active_key');
+      } else {
+        sessionStorage.setItem(storageKey, JSON.stringify({ ...currentUser, email }));
+        sessionStorage.setItem('6030h_active_key', storageKey);
+        localStorage.removeItem(storageKey);
       }
 
       enterApp();
@@ -2986,17 +3000,22 @@ Mother: No significant illness</textarea>
       initials: adminName.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase(),
       color: 'linear-gradient(135deg,#8b5cf6,#0ea5e9)'
     };
+    // New registrations are always remembered on device, keyed to their email
+    const regEmail = (document.getElementById('h-admin-email').value || 'admin@hospital.ng').trim().toLowerCase();
+    const regKey = '6030h_session_' + regEmail;
+    localStorage.setItem(regKey, JSON.stringify({ ...currentUser, email: regEmail }));
+    localStorage.setItem('6030h_active_key', regKey);
     enterApp();
   }
 
   // Enter the app
-  function enterApp() {
+  function enterApp(silent) {
     // Update dashboard greeting
     const greetEl = document.querySelector('#page-dashboard .section-title');
     const firstName = currentUser.name.split(' ').find(w => !['Dr.','Mr.','Mrs.','Ms.','Prof.'].includes(w)) || currentUser.name;
     if (greetEl) greetEl.textContent = `Good morning, ${firstName} 👋`;
 
-    // Always land on dashboard regardless of previous screen
+    // Always land on dashboard
     showPage('dashboard');
 
     // Show app, hide auth
@@ -3005,16 +3024,29 @@ Mother: No significant illness</textarea>
     appRoot.classList.add('visible');
     appRoot.style.animation = 'fadeSlide 0.35s ease';
 
-    // Auto-logout timer (30 min inactivity)
-    resetInactivityTimer();
-    document.addEventListener('mousemove', resetInactivityTimer);
-    document.addEventListener('keypress', resetInactivityTimer);
+    // Only start inactivity timer when NOT remembered (session-only login)
+    const activeKey = localStorage.getItem('6030h_active_key') || sessionStorage.getItem('6030h_active_key');
+    const isRemembered = activeKey ? !!localStorage.getItem(activeKey) : false;
+    if (!isRemembered) {
+      resetInactivityTimer();
+      document.addEventListener('mousemove', resetInactivityTimer);
+      document.addEventListener('keypress', resetInactivityTimer);
+    }
 
-    showToast(`Welcome, ${currentUser.name}!`, 'success');
+    if (!silent) showToast(`Welcome back, ${currentUser.name}!`, 'success');
   }
 
   // Logout
   function logout() {
+    // Clear only this user's keyed session
+    const activeKey = localStorage.getItem('6030h_active_key') || sessionStorage.getItem('6030h_active_key');
+    if (activeKey) {
+      localStorage.removeItem(activeKey);
+      sessionStorage.removeItem(activeKey);
+    }
+    localStorage.removeItem('6030h_active_key');
+    sessionStorage.removeItem('6030h_active_key');
+    clearTimeout(inactivityTimer);
     document.getElementById('app-root').classList.remove('visible');
     document.getElementById('auth-root').style.display = 'flex';
     showView('view-login');
@@ -3104,11 +3136,32 @@ Mother: No significant illness</textarea>
     }
   }
 
-  // Enter on login form
+  // Auto-restore session on page load
   document.addEventListener('DOMContentLoaded', () => {
+    // Attach enter key to password field
     document.getElementById('login-password').addEventListener('keydown', e => {
       if (e.key === 'Enter') doLogin();
     });
+
+    // Check if a remembered or active session exists, keyed to the user's email
+    const activeKey = localStorage.getItem('6030h_active_key') || sessionStorage.getItem('6030h_active_key');
+    if (activeKey) {
+      const saved = localStorage.getItem(activeKey) || sessionStorage.getItem(activeKey);
+      if (saved) {
+        try {
+          currentUser = JSON.parse(saved);
+          // Pre-fill the email field so user sees their account on next manual login
+          const emailEl = document.getElementById('login-email');
+          if (emailEl && currentUser.email) emailEl.value = currentUser.email;
+          enterApp(true); // silent=true, no toast on auto-restore
+        } catch(e) {
+          localStorage.removeItem(activeKey);
+          sessionStorage.removeItem(activeKey);
+          localStorage.removeItem('6030h_active_key');
+          sessionStorage.removeItem('6030h_active_key');
+        }
+      }
+    }
   });
 
 </script>
